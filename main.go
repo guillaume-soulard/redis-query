@@ -13,14 +13,14 @@ import (
 
 func main() {
 	params := parseParameters()
-	if params.Env != nil {
+	if *params.Env != "" {
 		loadEnv(&params)
 	}
-	if params.SetEnv != nil {
+	if *params.SetEnv != "" {
 		saveEnv(params)
-	} else if params.Format != nil {
+	} else if *params.Format != "" {
 		format(params)
-	} else if params.Scan != nil {
+	} else if *params.Scan != "" {
 		scan(params)
 	} else {
 		executeCommand(params)

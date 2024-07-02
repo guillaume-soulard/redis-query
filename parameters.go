@@ -13,7 +13,6 @@ type parameters struct {
 	Scan             *string
 	Format           *string
 	ScanCount        *int
-	Sentinel         *bool
 	SentinelMaster   *string
 	User             *string
 	Password         *string
@@ -27,7 +26,7 @@ type parameters struct {
 
 func parseParameters() parameters {
 	parser := argparse.NewParser("rq", "redis query tool")
-	parser.SetHelp("help", "help")
+	parser.SetHelp("", "help")
 	parser.ExitOnHelp(true)
 	var params parameters
 
@@ -38,22 +37,20 @@ func parseParameters() parameters {
 	params.Password = parser.String("w", "password", &argparse.Options{Required: false, Help: "redis password"})
 	params.Db = parser.Int("d", "db", &argparse.Options{Required: false, Help: "redis db index", Default: 0})
 
-	//flag.BoolVar(&params.Sentinel, "sentinel", false, "sentinel connection")
-	//flag.StringVar(&params.SentinelMaster, "sentinel-master", "mymaster", "redis sentinel master name")
-	//flag.StringVar(&params.SentinelAddrs, "sentinel-addrs", "127.0.0.1:26379", "redis sentinel addresses : <host1>:<port>,<host2>:<port>,....")
-	//flag.StringVar(&params.SentinelUser, "sentinel-user", "", "redis sentinel user")
-	//flag.StringVar(&params.SentinelPassword, "sentinel-password", "", "redis sentinel password")
+	params.SentinelMaster = parser.String("", "sentinel-master", &argparse.Options{Required: false, Help: "redis sentinel master name"})
+	params.SentinelUser = parser.String("", "sentinel-user", &argparse.Options{Required: false, Help: "redis sentinel user name"})
+	params.SentinelPassword = parser.String("", "sentinel-password", &argparse.Options{Required: false, Help: "redis sentinel password"})
+	params.SentinelAddrs = parser.String("", "sentinel-addrs", &argparse.Options{Required: false, Help: "redis sentinel addresses : <host1>:<port>,<host2>:<port>,...."})
 
 	params.Scan = parser.String("s", "scan", &argparse.Options{Required: false, Help: "scan pattern"})
 	params.ScanCount = parser.Int("l", "scan-len", &argparse.Options{Required: false, Help: "scan pattern", Default: 10})
 	params.PipelineSize = parser.Int("P", "pipeline-len", &argparse.Options{Required: false, Help: "scan pattern", Default: 1})
 
-	//flag.StringVar(&params.Format, "format", "", "format output : special variables : {stdin} = stdin value, {row} = row number from 1 to n")
-	//
-	//flag.StringVar(&params.Env, "env", "local", "environment to use")
-	//flag.StringVar(&params.SetEnv, "set-env", "", "environment to save with provided settings")
-	//
-	//flag.Parse()
+	params.Format = parser.String("", "format", &argparse.Options{Required: false, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n"})
+
+	params.Env = parser.String("e", "env", &argparse.Options{Required: false, Help: "environment to use"})
+	params.SetEnv = parser.String("", "set-env", &argparse.Options{Required: false, Help: "environment to save with provided settings"})
+
 	if err := parser.Parse(os.Args); err != nil {
 		fmt.Println(parser.Usage(nil))
 		os.Exit(1)

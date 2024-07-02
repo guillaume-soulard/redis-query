@@ -23,7 +23,6 @@ func loadEnv(params *parameters) {
 			setIfNotDefault(&params.Port, loadedParams.Port)
 			setIfNotDefault(&params.Scan, loadedParams.Scan)
 			setIfNotDefault(&params.ScanCount, loadedParams.ScanCount)
-			setIfNotDefault(&params.Sentinel, loadedParams.Sentinel)
 			setIfNotDefault(&params.SentinelMaster, loadedParams.SentinelMaster)
 			setIfNotDefault(&params.User, loadedParams.User)
 			setIfNotDefault(&params.Password, loadedParams.Password)
@@ -48,7 +47,7 @@ func saveEnv(params parameters) {
 		if err = os.MkdirAll(fmt.Sprintf("%s/.redis-query", home), 0777); err != nil {
 			panic(err)
 		}
-		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, params.SetEnv), file, 0777); err != nil {
+		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv), file, 0777); err != nil {
 			panic(err)
 		}
 	}

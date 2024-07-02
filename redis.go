@@ -10,7 +10,7 @@ import (
 
 func connectToRedis(params parameters) (client *redis.Client) {
 
-	if params.Sentinel != nil {
+	if *params.SentinelAddrs != "" {
 		client = redis.NewFailoverClient(&redis.FailoverOptions{
 			SentinelAddrs:    strings.Split(*params.SentinelAddrs, ","),
 			SentinelUsername: *params.SentinelUser,
