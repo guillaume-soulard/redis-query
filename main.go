@@ -3,34 +3,58 @@ package main
 import (
 	"bufio"
 	"context"
-	"flag"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
+	"math"
 	"os"
 	"strings"
 )
 
 func main() {
 	params := parseParameters()
-	if *params.Env != "" {
+	if params.Command.Cmd.Happened() && *params.Command.EnvName != "" {
 		loadEnv(&params)
 	}
-	if *params.SetEnv != "" {
+	if params.SetEnv.Cmd.Happened() {
 		saveEnv(params)
-	} else if *params.Format != "" {
+	} else if params.DelEnv.Cmd.Happened() {
+		delEnv(params)
+	} else if params.Format.Cmd.Happened() {
 		format(params)
-	} else if *params.Scan != "" {
+	} else if params.Scan.Cmd.Happened() {
 		scan(params)
-	} else {
+	} else if params.Loop.Cmd.Happened() {
+		loop(params)
+	} else if params.Command.Cmd.Happened() {
 		executeCommand(params)
+	} else {
+		fmt.Println(params.Parser.Usage(nil))
 	}
 }
 
-func executeCommand(params parameters) {
-	client := connectToRedis(params)
+func loop(params Parameters) {
+	from := 0
+	to := math.MaxInt
+	step := 1
+	if params.Loop.LoopFrom != nil {
+		from = *params.Loop.LoopFrom
+	}
+	if params.Loop.LoopTo != nil {
+		to = *params.Loop.LoopTo
+	}
+	if params.Loop.LoopStep != nil {
+		step = *params.Loop.LoopStep
+	}
+	for i := from; i <= to; i += step {
+		fmt.Println(fmt.Sprintf("%d", i))
+	}
+}
+
+func executeCommand(params Parameters) {
+	client := connectToRedis(params.Command.Connect)
 	scanner := bufio.NewScanner(os.Stdin)
-	args := flag.Args()
+	args := strings.Split(*params.Command.Command, " ")
 	waitingForPipeParams := false
 	for _, arg := range args {
 		if arg == "?" {
@@ -54,7 +78,7 @@ func executeCommand(params parameters) {
 				panic(err)
 			}
 			pipelineCount++
-			if pipelineCount >= *params.PipelineSize {
+			if pipelineCount >= *params.Command.Pipeline {
 				if cmds, err := pipeline.Exec(context.Background()); err != nil {
 					panic(err)
 				} else {
@@ -86,13 +110,13 @@ func executeCommand(params parameters) {
 	}
 }
 
-func scan(params parameters) {
-	client := connectToRedis(params)
+func scan(params Parameters) {
+	client := connectToRedis(params.Scan.Connect)
 	cursor := uint64(0)
 	var err error
 	var keys []string
 	for {
-		if keys, cursor, err = client.Scan(context.Background(), cursor, *params.Scan, int64(*params.ScanCount)).Result(); err != nil {
+		if keys, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
 			log.Fatal(err)
 		}
 		for _, key := range keys {
@@ -104,11 +128,11 @@ func scan(params parameters) {
 	}
 }
 
-func format(params parameters) {
+func format(params Parameters) {
 	scanner := bufio.NewScanner(os.Stdin)
 	row := int64(1)
 	for scanner.Scan() {
-		output := *params.Format
+		output := *params.Format.Format
 		text := scanner.Text()
 		output = strings.ReplaceAll(output, "{stdin}", text)
 		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", row))

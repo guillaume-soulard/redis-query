@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"log"
 	"strings"
 )
 
-func connectToRedis(params parameters) (client *redis.Client) {
+func connectToRedis(params ConnectParameters) (client *redis.Client) {
 
 	if *params.SentinelAddrs != "" {
 		client = redis.NewFailoverClient(&redis.FailoverOptions{
@@ -31,7 +30,7 @@ func connectToRedis(params parameters) (client *redis.Client) {
 	var err error
 	pong, err := client.Ping(context.Background()).Result()
 	if err != nil || pong != "PONG" {
-		log.Fatal(err)
+		panic(err)
 	}
 	return client
 }

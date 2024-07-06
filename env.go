@@ -6,29 +6,41 @@ import (
 	"os"
 )
 
-func loadEnv(params *parameters) {
+func loadEnv(params *Parameters) {
 	if home, err := os.UserHomeDir(); err != nil {
 		panic(err)
 	} else {
 		var file []byte
-		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, params.Env)); err != nil {
+		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name)); err != nil {
 			return
 		} else {
-			var loadedParams parameters
+			var loadedParams ConnectParameters
 			if err = json.Unmarshal(file, &loadedParams); err != nil {
 				panic(err)
 			}
-			setIfNotDefault(&params.Host, loadedParams.Host)
-			setIfNotDefault(&params.Db, loadedParams.Db)
-			setIfNotDefault(&params.Port, loadedParams.Port)
-			setIfNotDefault(&params.Scan, loadedParams.Scan)
-			setIfNotDefault(&params.ScanCount, loadedParams.ScanCount)
-			setIfNotDefault(&params.SentinelMaster, loadedParams.SentinelMaster)
-			setIfNotDefault(&params.User, loadedParams.User)
-			setIfNotDefault(&params.Password, loadedParams.Password)
-			setIfNotDefault(&params.SentinelAddrs, loadedParams.SentinelAddrs)
-			setIfNotDefault(&params.SentinelUser, loadedParams.SentinelUser)
-			setIfNotDefault(&params.SentinelPassword, loadedParams.SentinelPassword)
+			var connect ConnectParameters
+			setIfNotDefault(&connect.Host, loadedParams.Host)
+			setIfNotDefault(&connect.Db, loadedParams.Db)
+			setIfNotDefault(&connect.Port, loadedParams.Port)
+			setIfNotDefault(&connect.SentinelMaster, loadedParams.SentinelMaster)
+			setIfNotDefault(&connect.User, loadedParams.User)
+			setIfNotDefault(&connect.Password, loadedParams.Password)
+			setIfNotDefault(&connect.SentinelAddrs, loadedParams.SentinelAddrs)
+			setIfNotDefault(&connect.SentinelUser, loadedParams.SentinelUser)
+			setIfNotDefault(&connect.SentinelPassword, loadedParams.SentinelPassword)
+
+			params.Command.Connect = connect
+			params.Scan.Connect = connect
+		}
+	}
+}
+
+func delEnv(params Parameters) {
+	if home, err := os.UserHomeDir(); err != nil {
+		panic(err)
+	} else {
+		if err = os.Remove(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name)); err != nil {
+			panic(err)
 		}
 	}
 }
@@ -39,7 +51,7 @@ func setIfNotDefault[T comparable](param *T, loadedParameter T) {
 	}
 }
 
-func saveEnv(params parameters) {
+func saveEnv(params Parameters) {
 	file, _ := json.MarshalIndent(params, "", " ")
 	if home, err := os.UserHomeDir(); err != nil {
 		panic(err)
@@ -47,7 +59,7 @@ func saveEnv(params parameters) {
 		if err = os.MkdirAll(fmt.Sprintf("%s/.redis-query", home), 0777); err != nil {
 			panic(err)
 		}
-		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv), file, 0777); err != nil {
+		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name), file, 0777); err != nil {
 			panic(err)
 		}
 	}
