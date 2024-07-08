@@ -21,6 +21,10 @@ func main() {
 		saveEnv(params)
 	} else if params.DelEnv.Cmd.Happened() {
 		delEnv(params)
+	} else if params.ListEnv.Cmd.Happened() {
+		listEnv()
+	} else if params.DescribeEnv.Cmd.Happened() {
+		describeEnv(params)
 	} else if params.Format.Cmd.Happened() {
 		format(params)
 	} else if params.Scan.Cmd.Happened() {

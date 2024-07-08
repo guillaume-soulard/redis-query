@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func loadEnv(params *Parameters) {
@@ -61,6 +62,35 @@ func saveEnv(params Parameters) {
 		}
 		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name), file, 0777); err != nil {
 			PrintErrorAndExit(err)
+		}
+	}
+}
+
+func listEnv() {
+	if home, err := os.UserHomeDir(); err != nil {
+		PrintErrorAndExit(err)
+	} else {
+		var dirEntries []os.DirEntry
+		if dirEntries, err = os.ReadDir(fmt.Sprintf("%s/.redis-query", home)); err != nil {
+			PrintErrorAndExit(err)
+		}
+		for _, entry := range dirEntries {
+			if strings.Contains(entry.Name(), ".json") {
+				fmt.Println(strings.ReplaceAll(entry.Name(), ".json", ""))
+			}
+		}
+	}
+}
+
+func describeEnv(params Parameters) {
+	if home, err := os.UserHomeDir(); err != nil {
+		PrintErrorAndExit(err)
+	} else {
+		var file []byte
+		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.DescribeEnv.Name)); err != nil {
+			return
+		} else {
+			fmt.Println(string(file))
 		}
 	}
 }

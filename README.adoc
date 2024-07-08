@@ -1,0 +1,10 @@
+= Redis query
+
+Tool to query a redis database
+
+== Usage
+
+.Execute a command
+----
+rq exec -c "PING"
+----

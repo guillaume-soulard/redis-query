@@ -7,13 +7,15 @@ import (
 )
 
 type Parameters struct {
-	SetEnv  EnvCommand
-	DelEnv  EnvCommand
-	Parser  *argparse.Parser
-	Loop    LoopCommand
-	Scan    ScanCommand
-	Format  FormatCommand
-	Command CommandCommand
+	SetEnv      EnvCommand
+	DelEnv      EnvCommand
+	ListEnv     EnvCommand
+	DescribeEnv EnvCommand
+	Parser      *argparse.Parser
+	Loop        LoopCommand
+	Scan        ScanCommand
+	Format      FormatCommand
+	Command     CommandCommand
 }
 
 type EnvCommand struct {
@@ -79,9 +81,16 @@ func parseParameters() Parameters {
 	params.SetEnv.Cmd = configSetCommand
 	setConnect(&params.SetEnv.ConnectParameters, configSetCommand)
 
-	configDelCommand := configCommand.NewCommand("remove", "remove te environment")
+	configDelCommand := configCommand.NewCommand("remove", "remove the environment")
 	params.DelEnv.Name = configDelCommand.String("", "name", &argparse.Options{Required: true, Help: "env name", Default: "local"})
 	params.DelEnv.Cmd = configDelCommand
+
+	configListCommand := configCommand.NewCommand("list", "list environments")
+	params.ListEnv.Cmd = configListCommand
+
+	configDescribeCommand := configCommand.NewCommand("describe", "describe the environment")
+	params.DescribeEnv.Name = configDescribeCommand.String("", "name", &argparse.Options{Required: true, Help: "env name", Default: "local"})
+	params.DescribeEnv.Cmd = configDescribeCommand
 
 	loopCommand := parser.NewCommand("loop", "loop from integers")
 	params.Loop.LoopFrom = loopCommand.Int("", "loop-from", &argparse.Options{Required: false, Default: nil, Help: "loop from the provided number"})
