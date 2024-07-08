@@ -30,7 +30,7 @@ func connectToRedis(params ConnectParameters) (client *redis.Client) {
 	var err error
 	pong, err := client.Ping(context.Background()).Result()
 	if err != nil || pong != "PONG" {
-		panic(err)
+		PrintErrorAndExit(err)
 	}
 	return client
 }

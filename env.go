@@ -8,7 +8,7 @@ import (
 
 func loadEnv(params *Parameters) {
 	if home, err := os.UserHomeDir(); err != nil {
-		panic(err)
+		PrintErrorAndExit(err)
 	} else {
 		var file []byte
 		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name)); err != nil {
@@ -16,7 +16,7 @@ func loadEnv(params *Parameters) {
 		} else {
 			var loadedParams ConnectParameters
 			if err = json.Unmarshal(file, &loadedParams); err != nil {
-				panic(err)
+				PrintErrorAndExit(err)
 			}
 			var connect ConnectParameters
 			setIfNotDefault(&connect.Host, loadedParams.Host)
@@ -37,10 +37,10 @@ func loadEnv(params *Parameters) {
 
 func delEnv(params Parameters) {
 	if home, err := os.UserHomeDir(); err != nil {
-		panic(err)
+		PrintErrorAndExit(err)
 	} else {
 		if err = os.Remove(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name)); err != nil {
-			panic(err)
+			PrintErrorAndExit(err)
 		}
 	}
 }
@@ -54,13 +54,13 @@ func setIfNotDefault[T comparable](param *T, loadedParameter T) {
 func saveEnv(params Parameters) {
 	file, _ := json.MarshalIndent(params, "", " ")
 	if home, err := os.UserHomeDir(); err != nil {
-		panic(err)
+		PrintErrorAndExit(err)
 	} else {
 		if err = os.MkdirAll(fmt.Sprintf("%s/.redis-query", home), 0777); err != nil {
-			panic(err)
+			PrintErrorAndExit(err)
 		}
 		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name), file, 0777); err != nil {
-			panic(err)
+			PrintErrorAndExit(err)
 		}
 	}
 }

@@ -6,29 +6,6 @@ import (
 	"os"
 )
 
-//type parameters struct {
-//	Host             *string
-//	Db               *int
-//	Port             *int
-//	Scan             *string
-//	Format           *string
-//	ScanCount        *int
-//	SentinelMaster   *string
-//	User             *string
-//	Password         *string
-//	SentinelAddrs    *string
-//	SentinelUser     *string
-//	SentinelPassword *string
-//	PipelineSize     *int
-//	Commands         *[]string
-//	LoopFrom         *int
-//	LoopTo           *int
-//	LoopStep         *int
-//	Env              *string `json:"-"`
-//	SetEnv           *string `json:"-"`
-//	Parser           *argparse.Parser
-//}
-
 type Parameters struct {
 	SetEnv  EnvCommand
 	DelEnv  EnvCommand
@@ -65,13 +42,14 @@ type LoopCommand struct {
 }
 
 type ScanCommand struct {
-	EnvName *string
-	Pattern *string
-	Count   *int
-	Limit   *int
-	Type    *string
-	Connect ConnectParameters
-	Cmd     *argparse.Command
+	EnvName   *string
+	Pattern   *string
+	Count     *int
+	Limit     *int
+	Type      *string
+	Connect   ConnectParameters
+	Cmd       *argparse.Command
+	KeyToScan *string
 }
 
 type FormatCommand struct {
@@ -117,6 +95,7 @@ func parseParameters() Parameters {
 	params.Scan.Limit = scanCommand.Int("l", "limit", &argparse.Options{Required: false, Help: "scan pattern", Default: -1})
 	params.Scan.Type = scanCommand.String("t", "type", &argparse.Options{Required: false, Help: "type of key to scan : string, list, set, zset, hash and stream"})
 	params.Scan.EnvName = scanCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
+	params.Scan.KeyToScan = scanCommand.String("k", "key", &argparse.Options{Required: false, Help: "key to scan (set, hash or sorted set)"})
 	params.Scan.Cmd = scanCommand
 	setConnect(&params.Scan.Connect, scanCommand)
 
@@ -132,9 +111,8 @@ func parseParameters() Parameters {
 	params.Command.Cmd = commandCommand
 
 	if err := parser.Parse(os.Args); err != nil {
-		fmt.Println(err.Error())
 		fmt.Println(parser.Usage(nil))
-		os.Exit(1)
+		Exit()
 	}
 	return params
 }

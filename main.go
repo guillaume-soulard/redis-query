@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
@@ -75,12 +76,12 @@ func executeCommand(params Parameters) {
 				}
 			}
 			if _, err := pipeline.Do(context.Background(), doArgs...).Result(); err != nil {
-				panic(err)
+				PrintErrorAndExit(err)
 			}
 			pipelineCount++
 			if pipelineCount >= *params.Command.Pipeline {
 				if cmds, err := pipeline.Exec(context.Background()); err != nil {
-					panic(err)
+					PrintErrorAndExit(err)
 				} else {
 					for _, cmd := range cmds {
 						fmt.Println(cmd.(*redis.Cmd).Val())
@@ -95,10 +96,10 @@ func executeCommand(params Parameters) {
 			doArgs[i] = arg
 		}
 		if _, err := pipeline.Do(context.Background(), doArgs...).Result(); err != nil {
-			panic(err)
+			PrintErrorAndExit(err)
 		}
 		if cmds, err := pipeline.Exec(context.Background()); err != nil {
-			panic(err)
+			PrintErrorAndExit(err)
 		} else {
 			for _, cmd := range cmds {
 				fmt.Println(cmd.(*redis.Cmd).Val())
@@ -114,12 +115,35 @@ func scan(params Parameters) {
 	client := connectToRedis(params.Scan.Connect)
 	cursor := uint64(0)
 	var err error
-	var keys []string
-	for {
-		if keys, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-			log.Fatal(err)
+	var result []string
+	var keyType string
+	key := *params.Scan.KeyToScan
+	if key != "" {
+		if keyType, err = client.Type(context.Background(), key).Result(); err != nil {
+			PrintErrorAndExit(err)
 		}
-		for _, key := range keys {
+	}
+	for {
+		if keyType == "set" {
+			if result, cursor, err = client.SScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
+				PrintErrorAndExit(err)
+			}
+		} else if keyType == "zset" {
+			if result, cursor, err = client.ZScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
+				PrintErrorAndExit(err)
+			}
+		} else if keyType == "hash" {
+			if result, cursor, err = client.HScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
+				PrintErrorAndExit(err)
+			}
+		} else if keyType == "" {
+			if result, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
+				PrintErrorAndExit(err)
+			}
+		} else {
+			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
+		}
+		for _, key := range result {
 			fmt.Println(key)
 		}
 		if cursor == 0 {
