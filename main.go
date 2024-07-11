@@ -28,8 +28,6 @@ func main() {
 		listEnv()
 	} else if params.DescribeEnv.Cmd.Happened() {
 		describeEnv(params)
-	} else if params.Format.Cmd.Happened() {
-		format(params)
 	} else if params.Scan.Cmd.Happened() {
 		scan(params)
 	} else if params.Loop.Cmd.Happened() {
@@ -165,11 +163,11 @@ func scan(params Parameters) {
 	}
 }
 
-func format(params Parameters) {
+func formatIfNeededAndPrint(n *int, stdin string, result string, params FormatParameters) {
 	scanner := bufio.NewScanner(os.Stdin)
 	row := int64(1)
 	for scanner.Scan() {
-		output := *params.Format.Format
+		output := *params.Format
 		text := scanner.Text()
 		output = strings.ReplaceAll(output, "{stdin}", text)
 		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", row))

@@ -14,7 +14,6 @@ type Parameters struct {
 	Parser      *argparse.Parser
 	Loop        LoopCommand
 	Scan        ScanCommand
-	Format      FormatCommand
 	Command     CommandCommand
 }
 
@@ -50,13 +49,9 @@ type ScanCommand struct {
 	Limit     *int
 	Type      *string
 	Connect   ConnectParameters
+	Format    FormatParameters
 	Cmd       *argparse.Command
 	KeyToScan *string
-}
-
-type FormatCommand struct {
-	Format *string
-	Cmd    *argparse.Command
 }
 
 type CommandCommand struct {
@@ -64,7 +59,12 @@ type CommandCommand struct {
 	Pipeline *int
 	Command  *string
 	Connect  ConnectParameters
+	Format   FormatParameters
 	Cmd      *argparse.Command
+}
+
+type FormatParameters struct {
+	Format *string
 }
 
 func parseParameters() Parameters {
@@ -105,17 +105,15 @@ func parseParameters() Parameters {
 	params.Scan.Type = scanCommand.String("t", "type", &argparse.Options{Required: false, Help: "type of key to scan : string, list, set, zset, hash and stream"})
 	params.Scan.EnvName = scanCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
 	params.Scan.KeyToScan = scanCommand.String("k", "key", &argparse.Options{Required: false, Help: "key to scan (set, hash or sorted set)"})
+	setFormat(&params.Command.Format, scanCommand)
 	params.Scan.Cmd = scanCommand
 	setConnect(&params.Scan.Connect, scanCommand)
-
-	formatCommand := parser.NewCommand("format", "format to stdin")
-	params.Format.Format = formatCommand.String("", "format", &argparse.Options{Required: true, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n"})
-	params.Format.Cmd = formatCommand
 
 	commandCommand := parser.NewCommand("exec", "execute a redis command")
 	params.Command.Command = commandCommand.String("c", "command", &argparse.Options{Required: false, Help: "command to run on redis"})
 	params.Command.Pipeline = commandCommand.Int("P", "pipeline", &argparse.Options{Required: false, Help: "pipeline len to use for server interaction", Default: 1})
 	params.Command.EnvName = commandCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
+	setFormat(&params.Command.Format, commandCommand)
 	setConnect(&params.Command.Connect, commandCommand)
 	params.Command.Cmd = commandCommand
 
@@ -136,5 +134,8 @@ func setConnect(parameters *ConnectParameters, command *argparse.Command) {
 	parameters.SentinelUser = command.String("", "sentinel-user", &argparse.Options{Required: false, Help: "redis sentinel user name"})
 	parameters.SentinelPassword = command.String("", "sentinel-password", &argparse.Options{Required: false, Help: "redis sentinel password"})
 	parameters.SentinelAddrs = command.String("", "sentinel-addrs", &argparse.Options{Required: false, Help: "redis sentinel addresses : <host1>:<port>,<host2>:<port>,...."})
+}
 
+func setFormat(parameters *FormatParameters, command *argparse.Command) {
+	parameters.Format = command.String("", "format", &argparse.Options{Required: true, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n, {result} = the result of the command"})
 }
