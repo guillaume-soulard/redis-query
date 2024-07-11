@@ -15,7 +15,10 @@ import (
 func main() {
 	params := parseParameters()
 	if params.Command.Cmd.Happened() && *params.Command.EnvName != "" {
-		loadEnv(&params)
+		loadEnv(&params, *params.Command.EnvName)
+	}
+	if params.Scan.Cmd.Happened() && *params.Scan.EnvName != "" {
+		loadEnv(&params, *params.Scan.EnvName)
 	}
 	if params.SetEnv.Cmd.Happened() {
 		saveEnv(params)
@@ -141,13 +144,19 @@ func scan(params Parameters) {
 				PrintErrorAndExit(err)
 			}
 		} else if keyType == "" {
-			if result, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-				PrintErrorAndExit(err)
+			if *params.Scan.Type != "" {
+				if result, cursor, err = client.ScanType(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count), *params.Scan.Type).Result(); err != nil {
+					PrintErrorAndExit(err)
+				}
+			} else {
+				if result, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
+					PrintErrorAndExit(err)
+				}
 			}
 		} else {
 			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
 		}
-		for _, key := range result {
+		for _, key = range result {
 			fmt.Println(key)
 		}
 		if cursor == 0 {
