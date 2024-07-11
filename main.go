@@ -68,14 +68,18 @@ func executeCommand(params Parameters) {
 			break
 		}
 	}
+	rowNumber := int64(0)
 	if waitingForPipeParams {
 		pipeline := client.Pipeline()
 		pipelineCount := 0
+		stdin := ""
 		for scanner.Scan() {
 			doArgs := make([]interface{}, len(args))
 			for i, arg := range args {
 				if arg == "?" {
-					doArgs[i] = scanner.Text()
+					text := scanner.Text()
+					stdin += text
+					doArgs[i] = text
 				} else {
 					doArgs[i] = arg
 				}
@@ -89,7 +93,8 @@ func executeCommand(params Parameters) {
 					PrintErrorAndExit(err)
 				} else {
 					for _, cmd := range cmds {
-						fmt.Println(cmd.(*redis.Cmd).Val())
+						formatIfNeededAndPrint(&rowNumber, stdin, cmd.(*redis.Cmd).Val(), &params.Command.Format)
+						stdin = ""
 					}
 				}
 			}
@@ -107,7 +112,7 @@ func executeCommand(params Parameters) {
 			PrintErrorAndExit(err)
 		} else {
 			for _, cmd := range cmds {
-				fmt.Println(cmd.(*redis.Cmd).Val())
+				formatIfNeededAndPrint(&rowNumber, "", cmd.(*redis.Cmd).Val(), &params.Command.Format)
 			}
 		}
 	}
@@ -128,6 +133,7 @@ func scan(params Parameters) {
 			PrintErrorAndExit(err)
 		}
 	}
+	rowNumber := int64(0)
 	for {
 		if keyType == "set" {
 			if result, cursor, err = client.SScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
@@ -155,7 +161,7 @@ func scan(params Parameters) {
 			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
 		}
 		for _, key = range result {
-			fmt.Println(key)
+			formatIfNeededAndPrint(&rowNumber, "", key, &params.Scan.Format)
 		}
 		if cursor == 0 {
 			break
@@ -163,15 +169,15 @@ func scan(params Parameters) {
 	}
 }
 
-func formatIfNeededAndPrint(n *int, stdin string, result string, params FormatParameters) {
-	scanner := bufio.NewScanner(os.Stdin)
-	row := int64(1)
-	for scanner.Scan() {
+func formatIfNeededAndPrint(row *int64, stdin string, result interface{}, params *FormatParameters) {
+	if *params.Format == "" {
+		fmt.Println(result)
+	} else {
 		output := *params.Format
-		text := scanner.Text()
-		output = strings.ReplaceAll(output, "{stdin}", text)
-		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", row))
+		output = strings.ReplaceAll(output, "{stdin}", stdin)
+		output = strings.ReplaceAll(output, "{result}", fmt.Sprintf("%v", result))
+		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", *row))
+		*row = *row + 1
 		fmt.Println(output)
-		row++
 	}
 }

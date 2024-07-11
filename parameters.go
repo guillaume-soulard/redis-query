@@ -105,7 +105,7 @@ func parseParameters() Parameters {
 	params.Scan.Type = scanCommand.String("t", "type", &argparse.Options{Required: false, Help: "type of key to scan : string, list, set, zset, hash and stream"})
 	params.Scan.EnvName = scanCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
 	params.Scan.KeyToScan = scanCommand.String("k", "key", &argparse.Options{Required: false, Help: "key to scan (set, hash or sorted set)"})
-	setFormat(&params.Command.Format, scanCommand)
+	setFormat(&params.Scan.Format, scanCommand)
 	params.Scan.Cmd = scanCommand
 	setConnect(&params.Scan.Connect, scanCommand)
 
@@ -137,5 +137,5 @@ func setConnect(parameters *ConnectParameters, command *argparse.Command) {
 }
 
 func setFormat(parameters *FormatParameters, command *argparse.Command) {
-	parameters.Format = command.String("", "format", &argparse.Options{Required: true, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n, {result} = the result of the command"})
+	parameters.Format = command.String("", "format", &argparse.Options{Required: false, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n, {result} = the result of the command"})
 }
