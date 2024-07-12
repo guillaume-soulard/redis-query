@@ -68,7 +68,7 @@ type FormatParameters struct {
 }
 
 func parseParameters() Parameters {
-	parser := argparse.NewParser("rq", "redis query tool")
+	parser := argparse.NewParser("rq", "redis command line query tool")
 	parser.SetHelp("", "help")
 	parser.ExitOnHelp(true)
 	var params Parameters
@@ -77,33 +77,33 @@ func parseParameters() Parameters {
 
 	configCommand := parser.NewCommand("env", "configure environment")
 	configSetCommand := configCommand.NewCommand("set", "configure the environment")
-	params.SetEnv.Name = configSetCommand.String("", "name", &argparse.Options{Required: true, Help: "env name", Default: "local"})
+	params.SetEnv.Name = configSetCommand.String("", "name", &argparse.Options{Required: true, Help: "env name"})
 	params.SetEnv.Cmd = configSetCommand
 	setConnect(&params.SetEnv.ConnectParameters, configSetCommand)
 
 	configDelCommand := configCommand.NewCommand("remove", "remove the environment")
-	params.DelEnv.Name = configDelCommand.String("", "name", &argparse.Options{Required: true, Help: "env name", Default: "local"})
+	params.DelEnv.Name = configDelCommand.String("", "name", &argparse.Options{Required: true, Help: "env name"})
 	params.DelEnv.Cmd = configDelCommand
 
 	configListCommand := configCommand.NewCommand("list", "list environments")
 	params.ListEnv.Cmd = configListCommand
 
 	configDescribeCommand := configCommand.NewCommand("describe", "describe the environment")
-	params.DescribeEnv.Name = configDescribeCommand.String("", "name", &argparse.Options{Required: true, Help: "env name", Default: "local"})
+	params.DescribeEnv.Name = configDescribeCommand.String("", "name", &argparse.Options{Required: true, Help: "env name"})
 	params.DescribeEnv.Cmd = configDescribeCommand
 
 	loopCommand := parser.NewCommand("loop", "loop from integers")
-	params.Loop.LoopFrom = loopCommand.Int("", "loop-from", &argparse.Options{Required: false, Default: nil, Help: "loop from the provided number"})
-	params.Loop.LoopTo = loopCommand.Int("", "loop-to", &argparse.Options{Required: false, Help: "loop to the provided number"})
-	params.Loop.LoopStep = loopCommand.Int("", "loop-step", &argparse.Options{Required: false, Default: 1, Help: "loop step if loop from is provided"})
+	params.Loop.LoopFrom = loopCommand.Int("", "from", &argparse.Options{Required: false, Default: nil, Help: "loop from the provided number"})
+	params.Loop.LoopTo = loopCommand.Int("", "to", &argparse.Options{Required: false, Help: "loop to the provided number"})
+	params.Loop.LoopStep = loopCommand.Int("", "step", &argparse.Options{Required: false, Default: 1, Help: "loop step if loop from is provided"})
 	params.Loop.Cmd = loopCommand
 
-	scanCommand := parser.NewCommand("scan", "scan the redis instance iterativly")
+	scanCommand := parser.NewCommand("scan", "scan the redis instance or a scanable key iterativly")
 	params.Scan.Pattern = scanCommand.String("", "pattern", &argparse.Options{Required: true, Help: "scan pattern"})
-	params.Scan.Count = scanCommand.Int("c", "count", &argparse.Options{Required: false, Help: "scan pattern", Default: 10})
-	params.Scan.Limit = scanCommand.Int("l", "limit", &argparse.Options{Required: false, Help: "scan pattern", Default: -1})
+	params.Scan.Count = scanCommand.Int("c", "count", &argparse.Options{Required: false, Help: "scan count argument for scan command", Default: 10})
+	params.Scan.Limit = scanCommand.Int("l", "limit", &argparse.Options{Required: false, Help: "limit the number of keys to return", Default: -1})
 	params.Scan.Type = scanCommand.String("t", "type", &argparse.Options{Required: false, Help: "type of key to scan : string, list, set, zset, hash and stream"})
-	params.Scan.EnvName = scanCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
+	params.Scan.EnvName = scanCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
 	params.Scan.KeyToScan = scanCommand.String("k", "key", &argparse.Options{Required: false, Help: "key to scan (set, hash or sorted set)"})
 	setFormat(&params.Scan.Format, scanCommand)
 	params.Scan.Cmd = scanCommand
@@ -112,7 +112,7 @@ func parseParameters() Parameters {
 	commandCommand := parser.NewCommand("exec", "execute a redis command")
 	params.Command.Command = commandCommand.String("c", "command", &argparse.Options{Required: false, Help: "command to run on redis"})
 	params.Command.Pipeline = commandCommand.Int("P", "pipeline", &argparse.Options{Required: false, Help: "pipeline len to use for server interaction", Default: 1})
-	params.Command.EnvName = commandCommand.String("e", "--env", &argparse.Options{Required: false, Help: "environment name to use"})
+	params.Command.EnvName = commandCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
 	setFormat(&params.Command.Format, commandCommand)
 	setConnect(&params.Command.Connect, commandCommand)
 	params.Command.Cmd = commandCommand

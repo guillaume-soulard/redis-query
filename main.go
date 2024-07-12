@@ -68,7 +68,7 @@ func executeCommand(params Parameters) {
 			break
 		}
 	}
-	rowNumber := int64(0)
+	rowNumber := 0
 	if waitingForPipeParams {
 		pipeline := client.Pipeline()
 		pipelineCount := 0
@@ -133,7 +133,7 @@ func scan(params Parameters) {
 			PrintErrorAndExit(err)
 		}
 	}
-	rowNumber := int64(0)
+	rowNumber := 0
 	for {
 		if keyType == "set" {
 			if result, cursor, err = client.SScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
@@ -161,15 +161,18 @@ func scan(params Parameters) {
 			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
 		}
 		for _, key = range result {
+			if rowNumber >= *params.Scan.Limit {
+				break
+			}
 			formatIfNeededAndPrint(&rowNumber, "", key, &params.Scan.Format)
 		}
-		if cursor == 0 {
+		if cursor == 0 || rowNumber >= *params.Scan.Limit {
 			break
 		}
 	}
 }
 
-func formatIfNeededAndPrint(row *int64, stdin string, result interface{}, params *FormatParameters) {
+func formatIfNeededAndPrint(row *int, stdin string, result interface{}, params *FormatParameters) {
 	if *params.Format == "" {
 		fmt.Println(result)
 	} else {
@@ -177,7 +180,7 @@ func formatIfNeededAndPrint(row *int64, stdin string, result interface{}, params
 		output = strings.ReplaceAll(output, "{stdin}", stdin)
 		output = strings.ReplaceAll(output, "{result}", fmt.Sprintf("%v", result))
 		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", *row))
-		*row = *row + 1
 		fmt.Println(output)
 	}
+	*row = *row + 1
 }

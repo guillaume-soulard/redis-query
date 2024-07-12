@@ -4,7 +4,14 @@ Tool to query a redis database
 
 == Usage
 
-.Execute a command
+=== exec subcommands
+
+.Execute a command (on localhost:6379 by default)
 ----
-rq exec -c "PING"
+rq exec -c PING
+----
+
+.Execute a command on specific redis instance
+----
+rq exec -h 1.2.3.4 -p 5698 -c "echo hello"
 ----
