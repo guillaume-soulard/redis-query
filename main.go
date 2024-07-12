@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"log"
 	"math"
 	"os"
@@ -61,64 +60,66 @@ func executeCommand(params Parameters) {
 	client := connectToRedis(params.Command.Connect)
 	scanner := bufio.NewScanner(os.Stdin)
 	args := strings.Split(*params.Command.Command, " ")
-	waitingForPipeParams := false
-	for _, arg := range args {
-		if arg == "?" {
-			waitingForPipeParams = true
-			break
+	result := make(chan interface{}, 10)
+	executor := NewExecutor(client, result, *params.Command.Pipeline, *params.Command.NoOutput)
+	go func() {
+		rowNumber := 0
+		for r := range result {
+			formatIfNeededAndPrint(&rowNumber, "", r, &params.Command.Format)
+			executor.Done()
 		}
-	}
-	rowNumber := 0
-	if waitingForPipeParams {
-		pipeline := client.Pipeline()
-		pipelineCount := 0
-		stdin := ""
-		for scanner.Scan() {
+	}()
+	if needAtLeastOneStdInArgument(args) {
+		needToExecuteCommand := true
+		for needToExecuteCommand {
 			doArgs := make([]interface{}, len(args))
+			var staticArg *string
 			for i, arg := range args {
-				if arg == "?" {
-					text := scanner.Text()
-					stdin += text
-					doArgs[i] = text
+				if strings.Contains(arg, "{?}") {
+					if staticArg == nil {
+						if needToExecuteCommand = scanner.Scan(); !needToExecuteCommand {
+							break
+						}
+						text := scanner.Text()
+						staticArg = &text
+					}
+					doArgs[i] = strings.ReplaceAll(arg, "{?}", *staticArg)
+				} else if strings.Contains(arg, "{>}") {
+					if needToExecuteCommand = scanner.Scan(); !needToExecuteCommand {
+						break
+					}
+					doArgs[i] = strings.ReplaceAll(arg, "{>}", scanner.Text())
 				} else {
 					doArgs[i] = arg
 				}
 			}
-			if _, err := pipeline.Do(context.Background(), doArgs...).Result(); err != nil {
-				PrintErrorAndExit(err)
+			if !needToExecuteCommand {
+				break
 			}
-			pipelineCount++
-			if pipelineCount >= *params.Command.Pipeline {
-				if cmds, err := pipeline.Exec(context.Background()); err != nil {
-					PrintErrorAndExit(err)
-				} else {
-					for _, cmd := range cmds {
-						formatIfNeededAndPrint(&rowNumber, stdin, cmd.(*redis.Cmd).Val(), &params.Command.Format)
-						stdin = ""
-					}
-				}
-			}
+			executor.executePipeline(doArgs)
 		}
 	} else {
-		pipeline := client.Pipeline()
 		doArgs := make([]interface{}, len(args))
 		for i, arg := range args {
 			doArgs[i] = arg
 		}
-		if _, err := pipeline.Do(context.Background(), doArgs...).Result(); err != nil {
-			PrintErrorAndExit(err)
-		}
-		if cmds, err := pipeline.Exec(context.Background()); err != nil {
-			PrintErrorAndExit(err)
-		} else {
-			for _, cmd := range cmds {
-				formatIfNeededAndPrint(&rowNumber, "", cmd.(*redis.Cmd).Val(), &params.Command.Format)
-			}
-		}
+		executor.executePipeline(doArgs)
 	}
+	executor.Wait()
 	if err := scanner.Err(); err != nil {
 		log.Println(err)
 	}
+}
+
+func needAtLeastOneStdInArgument(args []string) bool {
+	waitingForPipeParams := false
+	for _, arg := range args {
+		if strings.Contains(arg, "{?}") || strings.Contains(arg, "{>}") {
+			waitingForPipeParams = true
+			break
+		}
+	}
+	return waitingForPipeParams
 }
 
 func scan(params Parameters) {

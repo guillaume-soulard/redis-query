@@ -61,6 +61,7 @@ type CommandCommand struct {
 	Connect  ConnectParameters
 	Format   FormatParameters
 	Cmd      *argparse.Command
+	NoOutput *bool
 }
 
 type FormatParameters struct {
@@ -113,6 +114,7 @@ func parseParameters() Parameters {
 	params.Command.Command = commandCommand.String("c", "command", &argparse.Options{Required: false, Help: "command to run on redis"})
 	params.Command.Pipeline = commandCommand.Int("P", "pipeline", &argparse.Options{Required: false, Help: "pipeline len to use for server interaction", Default: 1})
 	params.Command.EnvName = commandCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
+	params.Command.NoOutput = commandCommand.Flag("", "no-output", &argparse.Options{Required: false, Help: "no output for command"})
 	setFormat(&params.Command.Format, commandCommand)
 	setConnect(&params.Command.Connect, commandCommand)
 	params.Command.Cmd = commandCommand
