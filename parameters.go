@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"github.com/akamensky/argparse"
 	"os"
 )
@@ -57,7 +57,7 @@ type ScanCommand struct {
 type CommandCommand struct {
 	EnvName  *string
 	Pipeline *int
-	Command  *string
+	Commands *[]string
 	Connect  ConnectParameters
 	Format   FormatParameters
 	Cmd      *argparse.Command
@@ -111,7 +111,7 @@ func parseParameters() Parameters {
 	setConnect(&params.Scan.Connect, scanCommand)
 
 	commandCommand := parser.NewCommand("exec", "execute a redis command")
-	params.Command.Command = commandCommand.String("c", "command", &argparse.Options{Required: false, Help: "command to run on redis"})
+	params.Command.Commands = commandCommand.StringList("c", "command", &argparse.Options{Required: false, Help: "command to run on redis instance"})
 	params.Command.Pipeline = commandCommand.Int("P", "pipeline", &argparse.Options{Required: false, Help: "pipeline len to use for server interaction", Default: 1})
 	params.Command.EnvName = commandCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
 	params.Command.NoOutput = commandCommand.Flag("", "no-output", &argparse.Options{Required: false, Help: "no output for command"})
@@ -120,8 +120,7 @@ func parseParameters() Parameters {
 	params.Command.Cmd = commandCommand
 
 	if err := parser.Parse(os.Args); err != nil {
-		fmt.Println(parser.Usage(nil))
-		Exit()
+		PrintErrorAndExit(errors.New(parser.Usage(nil)))
 	}
 	return params
 }

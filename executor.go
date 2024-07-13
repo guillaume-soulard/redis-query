@@ -31,18 +31,22 @@ func (e *Executor) executePipeline(args []interface{}) {
 	}
 	e.pipelineCount++
 	if e.pipelineCount >= e.pipelineMax {
-		if cmds, err := e.pipeline.Exec(context.Background()); err != nil {
-			PrintErrorAndExit(err)
-		} else {
-			if !e.noOutput {
-				e.wg.Add(len(cmds))
-				for _, cmd := range cmds {
-					e.result <- cmd.(*redis.Cmd).Val()
-				}
+		e.executePipelineCommands()
+	}
+}
+
+func (e *Executor) executePipelineCommands() {
+	if cmds, err := e.pipeline.Exec(context.Background()); err != nil {
+		PrintErrorAndExit(err)
+	} else {
+		if !e.noOutput {
+			e.wg.Add(len(cmds))
+			for _, cmd := range cmds {
+				e.result <- cmd.(*redis.Cmd).Val()
 			}
 		}
-		e.pipelineCount = 0
 	}
+	e.pipelineCount = 0
 }
 
 func (e *Executor) Wait() {

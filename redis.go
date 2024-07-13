@@ -8,7 +8,6 @@ import (
 )
 
 func connectToRedis(params ConnectParameters) (client *redis.Client) {
-
 	if *params.SentinelAddrs != "" {
 		client = redis.NewFailoverClient(&redis.FailoverOptions{
 			SentinelAddrs:    strings.Split(*params.SentinelAddrs, ","),

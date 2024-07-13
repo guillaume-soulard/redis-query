@@ -1,6 +1,13 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
+
+func Print(value interface{}) {
+	fmt.Println(value)
+}
 
 func PrintErrorAndExit(err error) {
 	if err != nil {

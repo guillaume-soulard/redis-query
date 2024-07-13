@@ -76,7 +76,7 @@ func listEnv() {
 		}
 		for _, entry := range dirEntries {
 			if strings.Contains(entry.Name(), ".json") {
-				fmt.Println(strings.ReplaceAll(entry.Name(), ".json", ""))
+				Print(strings.ReplaceAll(entry.Name(), ".json", ""))
 			}
 		}
 	}
@@ -90,7 +90,7 @@ func describeEnv(params Parameters) {
 		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.DescribeEnv.Name)); err != nil {
 			return
 		} else {
-			fmt.Println(string(file))
+			Print(string(file))
 		}
 	}
 }
