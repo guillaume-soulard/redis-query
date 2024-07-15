@@ -33,14 +33,20 @@ func main() {
 }
 
 func formatIfNeededAndPrint(row *int, stdin string, result interface{}, params *FormatParameters) {
-	if *params.Format == "" {
-		Print(result)
+	if items, ok := result.([]interface{}); ok {
+		for _, item := range items {
+			formatIfNeededAndPrint(row, stdin, item, params)
+		}
 	} else {
-		output := *params.Format
-		output = strings.ReplaceAll(output, "{stdin}", stdin)
-		output = strings.ReplaceAll(output, "{result}", fmt.Sprintf("%v", result))
-		output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", *row))
-		Print(output)
+		if *params.Format == "" {
+			Print(result)
+		} else {
+			output := *params.Format
+			output = strings.ReplaceAll(output, "{stdin}", stdin)
+			output = strings.ReplaceAll(output, "{result}", fmt.Sprintf("%v", result))
+			output = strings.ReplaceAll(output, "{row}", fmt.Sprintf("%d", *row))
+			Print(output)
+		}
+		*row = *row + 1
 	}
-	*row = *row + 1
 }
