@@ -51,7 +51,7 @@ func scan(params Parameters) {
 			}
 			formatIfNeededAndPrint(&rowNumber, "", key, &params.Scan.Format)
 		}
-		if cursor == 0 || rowNumber >= *params.Scan.Limit {
+		if cursor == 0 || (*params.Scan.Limit > 0 && rowNumber >= *params.Scan.Limit) {
 			break
 		}
 	}
