@@ -7,15 +7,19 @@ import (
 	"strings"
 )
 
+type NoLog struct{}
+
+func (NoLog) Printf(_ context.Context, _ string, _ ...interface{}) {}
+
 func connectToRedis(params ConnectParameters) (client *redis.Client) {
+	redis.SetLogger(NoLog{})
 	if *params.SentinelAddrs != "" {
 		client = redis.NewFailoverClient(&redis.FailoverOptions{
 			SentinelAddrs:    strings.Split(*params.SentinelAddrs, ","),
 			SentinelUsername: *params.SentinelUser,
-			SentinelPassword: *params.SentinelPassword,
 			MasterName:       *params.SentinelMaster,
 			Username:         *params.User,
-			Password:         *params.Password,
+			Password:         *params.SentinelPassword,
 			DB:               *params.Db,
 		})
 	} else {
