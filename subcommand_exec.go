@@ -28,7 +28,7 @@ func executeCommands(params Parameters) {
 		}
 		for needToExecuteCommand {
 			for _, command := range *params.Command.Commands {
-				args := strings.Split(command, " ")
+				args := ParseArguments(command)
 				doArgs := make([]interface{}, len(args))
 				var staticArg *string
 				for i, arg := range args {
@@ -58,7 +58,7 @@ func executeCommands(params Parameters) {
 		}
 	} else {
 		for _, command := range *params.Command.Commands {
-			args := strings.Split(command, " ")
+			args := ParseArguments(command)
 			doArgs := make([]interface{}, len(args))
 			for i, arg := range args {
 				doArgs[i] = arg
@@ -73,7 +73,7 @@ func executeCommands(params Parameters) {
 func needAtLeastOneStdInArgument(commands *CommandCommand) bool {
 	waitingForPipeParams := false
 	for _, command := range *commands.Commands {
-		args := strings.Split(command, " ")
+		args := ParseArguments(command)
 		for _, arg := range args {
 			if strings.Contains(arg, fixArgumentPlaceHolder) || strings.Contains(arg, iteratorArgumentPlaceHolder) {
 				waitingForPipeParams = true
