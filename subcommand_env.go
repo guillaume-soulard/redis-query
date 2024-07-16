@@ -27,8 +27,6 @@ func loadEnv(params *Parameters, envName string) {
 			setIfNotDefault(&connect.User, loadedParams.User)
 			setIfNotDefault(&connect.Password, loadedParams.Password)
 			setIfNotDefault(&connect.SentinelAddrs, loadedParams.SentinelAddrs)
-			setIfNotDefault(&connect.SentinelUser, loadedParams.SentinelUser)
-			setIfNotDefault(&connect.SentinelPassword, loadedParams.SentinelPassword)
 
 			params.Command.Connect = connect
 			params.Scan.Connect = connect

@@ -24,15 +24,13 @@ type EnvCommand struct {
 }
 
 type ConnectParameters struct {
-	Host             *string
-	Db               *int
-	Port             *int
-	SentinelMaster   *string
-	User             *string
-	Password         *string
-	SentinelAddrs    *string
-	SentinelUser     *string
-	SentinelPassword *string
+	Host           *string
+	Db             *int
+	Port           *int
+	SentinelMaster *string
+	User           *string
+	Password       *string
+	SentinelAddrs  *string
 }
 
 type LoopCommand struct {
@@ -132,8 +130,6 @@ func setConnect(parameters *ConnectParameters, command *argparse.Command) {
 	parameters.Password = command.String("w", "password", &argparse.Options{Required: false, Help: "redis password"})
 	parameters.Db = command.Int("d", "db", &argparse.Options{Required: false, Help: "redis db index", Default: 0})
 	parameters.SentinelMaster = command.String("", "sentinel-master", &argparse.Options{Required: false, Help: "redis sentinel master name"})
-	parameters.SentinelUser = command.String("", "sentinel-user", &argparse.Options{Required: false, Help: "redis sentinel user name"})
-	parameters.SentinelPassword = command.String("", "sentinel-password", &argparse.Options{Required: false, Help: "redis sentinel password"})
 	parameters.SentinelAddrs = command.String("", "sentinel-addrs", &argparse.Options{Required: false, Help: "redis sentinel addresses : <host1>:<port>,<host2>:<port>,...."})
 }
 

@@ -15,12 +15,11 @@ func connectToRedis(params ConnectParameters) (client *redis.Client) {
 	redis.SetLogger(NoLog{})
 	if *params.SentinelAddrs != "" {
 		client = redis.NewFailoverClient(&redis.FailoverOptions{
-			SentinelAddrs:    strings.Split(*params.SentinelAddrs, ","),
-			SentinelUsername: *params.SentinelUser,
-			MasterName:       *params.SentinelMaster,
-			Username:         *params.User,
-			Password:         *params.SentinelPassword,
-			DB:               *params.Db,
+			SentinelAddrs: strings.Split(*params.SentinelAddrs, ","),
+			MasterName:    *params.SentinelMaster,
+			Username:      *params.User,
+			Password:      *params.Password,
+			DB:            *params.Db,
 		})
 	} else {
 		client = redis.NewClient(&redis.Options{
