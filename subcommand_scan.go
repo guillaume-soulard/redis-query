@@ -45,11 +45,11 @@ func scan(params Parameters) {
 		} else {
 			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
 		}
-		for _, key = range result {
+		for _, keyResult := range result {
 			if *params.Scan.Limit > 0 && rowNumber >= *params.Scan.Limit {
 				break
 			}
-			formatIfNeededAndPrint(&rowNumber, "", key, &params.Scan.Format)
+			formatIfNeededAndPrint(&rowNumber, "", keyResult, &params.Scan.Format)
 		}
 		if cursor == 0 || (*params.Scan.Limit > 0 && rowNumber >= *params.Scan.Limit) {
 			break
