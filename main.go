@@ -28,6 +28,8 @@ func main() {
 		loop(params)
 	} else if params.Command.Cmd.Happened() {
 		executeCommands(params)
+	} else if params.Query.Cmd.Happened() {
+		executeQuery(params)
 	} else {
 		Print(params.Parser.Usage(nil))
 	}
