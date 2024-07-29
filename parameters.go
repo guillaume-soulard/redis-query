@@ -15,6 +15,7 @@ type Parameters struct {
 	Loop        LoopCommand
 	Scan        ScanCommand
 	Command     CommandCommand
+	Query       QueryCommand
 }
 
 type EnvCommand struct {
@@ -64,6 +65,14 @@ type CommandCommand struct {
 
 type FormatParameters struct {
 	Format *string
+}
+
+type QueryCommand struct {
+	EnvName *string
+	Query   *string
+	Connect ConnectParameters
+	Format  FormatParameters
+	Cmd     *argparse.Command
 }
 
 func parseParameters() Parameters {
@@ -116,6 +125,13 @@ func parseParameters() Parameters {
 	setFormat(&params.Command.Format, commandCommand)
 	setConnect(&params.Command.Connect, commandCommand)
 	params.Command.Cmd = commandCommand
+
+	queryCommand := parser.NewCommand("query", "execute a rql query")
+	params.Query.Query = queryCommand.String("q", "query", &argparse.Options{Required: true, Help: "the rql query to execute"})
+	params.Query.EnvName = queryCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
+	setFormat(&params.Query.Format, queryCommand)
+	setConnect(&params.Query.Connect, queryCommand)
+	params.Query.Cmd = queryCommand
 
 	if err := parser.Parse(os.Args); err != nil {
 		PrintErrorAndExit(errors.New(parser.Usage(nil)))

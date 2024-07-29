@@ -1,0 +1,63 @@
+= RQL
+
+.Block
+----
+{
+    // some commands
+}
+----
+
+.Block properties
+----
+{
+  // some commands
+} PIPELINE 10, DB 1, TRANSACTIONAL, ENV prod
+----
+
+.Comments
+----
+// one comment
+----
+
+.Execute a single command
+----
+{
+    GET "foo"
+}
+----
+
+.Execute multiple commands
+----
+{
+    GET "foo"
+    SET "fizz" "buzz"
+}
+----
+
+.Simple variable
+----
+{
+    GET foo => result => {
+        SET 'fizz' '#result'
+    }
+}
+----
+
+.List variable variables iteration
+----
+{
+    LRANGE 'users' 0 -1 => users => MAP user => {
+        SET 'user#user' 'OK'
+    }
+}
+----
+
+.List variable variables iteration with multiple values
+----
+{
+    DEL 'users'
+    HGETALL 'user:10' => fieldsAndValues => MAP key, value => {
+        ECHO 'field: #key, value : #value'
+    }
+}
+----
