@@ -10,18 +10,20 @@ type Query struct {
 }
 
 type Block struct {
-	Commands []Command `"{" @@* "}"`
+	Commands []Command `"{" (@@)* "}"`
 }
 
 type Command struct {
-	Name *string ` @Command `
+	Name  *string   `@Ident`
+	Args  *[]string `@String* `
+	Block *Block    `[">" @@]`
 }
 
 var (
 	rqlLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{`Ident`, `[a-zA-Z_][a-zA-Z0-9_]*`},
-		{`Command`, `[a-zA-Z_][a-zA-Z0-9_]*`},
-		{"Punct", `[{}]`},
+		{`Command`, `[a-zA-Z][a-zA-Z0-9]*`},
+		{"Punct", `[{}>]`},
 		{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
 		{`String`, `'[^']*'|"[^"]*"`},
 		{"whitespace", `\s+`},
@@ -30,7 +32,7 @@ var (
 		participle.Lexer(rqlLexer),
 		participle.Unquote("String"),
 		participle.UseLookahead(2),
-		participle.CaseInsensitive("Command"),
+		participle.CaseInsensitive("Ident"),
 	)
 )
 
