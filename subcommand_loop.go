@@ -18,7 +18,8 @@ func loop(params Parameters) {
 	if params.Loop.LoopStep != nil {
 		step = *params.Loop.LoopStep
 	}
+	row := 1
 	for i := from; i <= to; i += step {
-		Print(fmt.Sprintf("%d", i))
+		formatIfNeededAndPrint(&row, "", fmt.Sprintf("%d", i), &params.Loop.Format)
 	}
 }

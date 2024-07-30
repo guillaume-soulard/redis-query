@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/akamensky/argparse v1.4.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/lucasjones/reggen v0.0.0-20200904144131-37ba4fa293bb
 )
 
 require (

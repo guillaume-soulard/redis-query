@@ -37,6 +37,7 @@ type LoopCommand struct {
 	LoopFrom *int
 	LoopTo   *int
 	LoopStep *int
+	Format   FormatParameters
 	Cmd      *argparse.Command
 }
 
@@ -95,6 +96,7 @@ func parseParameters() Parameters {
 	params.Loop.LoopFrom = loopCommand.Int("", "from", &argparse.Options{Required: false, Default: nil, Help: "loop from the provided number"})
 	params.Loop.LoopTo = loopCommand.Int("", "to", &argparse.Options{Required: false, Help: "loop to the provided number"})
 	params.Loop.LoopStep = loopCommand.Int("", "step", &argparse.Options{Required: false, Default: 1, Help: "loop step if loop from is provided"})
+	setFormat(&params.Loop.Format, loopCommand)
 	params.Loop.Cmd = loopCommand
 
 	scanCommand := parser.NewCommand("scan", "scan the redis instance or a scanable key iterativly")
@@ -134,5 +136,5 @@ func setConnect(parameters *ConnectParameters, command *argparse.Command) {
 }
 
 func setFormat(parameters *FormatParameters, command *argparse.Command) {
-	parameters.Format = command.String("", "format", &argparse.Options{Required: false, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n, {result} = the result of the command"})
+	parameters.Format = command.String("", "format", &argparse.Options{Required: false, Help: "format stdin with some variables : {stdin} = stdin value, {row} = row number from 1 to n, {result} = the result of the command, {random} = a random value"})
 }
