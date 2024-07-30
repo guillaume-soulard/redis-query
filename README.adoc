@@ -4,7 +4,7 @@ Tool to query a redis database
 
 == Usage
 
-=== exec subcommands
+=== Execute commands
 
 .Execute a command (on localhost:6379 by default)
 ----
@@ -13,5 +13,61 @@ rq exec -c PING
 
 .Execute a command on specific redis instance
 ----
-rq exec -h 1.2.3.4 -p 5698 -c "echo hello"
+rq exec -h 1.2.3.4 -p 5698 -c "echo \"hello world\""
+----
+
+.Execute multiple commands
+----
+rq exec -c "get foo" -c "get bar"
+----
+
+.Execute commands based on stdin (this command iterate over all redis keys then get the type of each keys)
+----
+rq exec -c "KEYS *" | rq -c "type {?}"
+----
+
+=== Scan
+
+.Scan keys (scan string keys for pattern * with batch size 1500 then return maximum 10 keys)
+----
+rq scan --pattern "*" --count 1500 -- limit 10 --type string
+----
+
+.Scan a redis key with key parameter
+----
+rq scan --pattern "*" --count 1500 -- limit 10 --key "the-set"
+----
+
+=== Scan
+
+.Scan a redis database
+----
+rq scan --pattern "*test*" --count 1000 --limit 10 --type string
+----
+
+.Scan a redis database
+----
+rq scan --pattern "*test*" --count 1000 --limit 10 --key akey
+----
+
+=== Managing environments
+
+.Set an environment
+----
+rq env set --name dev --host 1.2.3.4 --port 12345 --db 3
+----
+
+.List all environment
+----
+rq env list
+----
+
+.Describe an environment
+----
+rq env describe --name dev
+----
+
+.Describe an environment
+----
+rq env revmove --name dev
 ----
