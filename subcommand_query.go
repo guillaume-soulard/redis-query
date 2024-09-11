@@ -7,6 +7,7 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/go-redis/redis/v8"
+	"strings"
 )
 
 type QueryContext struct {
@@ -89,10 +90,21 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 				blockContext.Parameters = make(map[string]interface{})
 				paramIndex := 0
 				resultArray := make([]interface{}, 0, len(array)/len(c.Block.BlockArgs.Args))
-
-				for _, arg := range c.Block.BlockArgs.Args {
-					blockContext.Parameters[arg] = array[paramIndex]
-					paramIndex++
+				readParams := 0
+				for {
+					for _, arg := range c.Block.BlockArgs.Args {
+						blockContext.Parameters[arg] = array[paramIndex]
+						paramIndex++
+						readParams++
+						if paramIndex >= len(blockContext.Parameters) {
+							var subResult ExecutableResult
+							if subResult, err = c.Block.Execute(blockContext); err != nil {
+								return executableResult, err
+							}
+							resultArray = append(resultArray, subResult.Result)
+							paramIndex = 0
+						}
+					}
 					if paramIndex >= len(blockContext.Parameters) {
 						var subResult ExecutableResult
 						if subResult, err = c.Block.Execute(blockContext); err != nil {
@@ -101,14 +113,9 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 						resultArray = append(resultArray, subResult.Result)
 						paramIndex = 0
 					}
-				}
-				if paramIndex >= len(blockContext.Parameters) {
-					var subResult ExecutableResult
-					if subResult, err = c.Block.Execute(blockContext); err != nil {
-						return executableResult, err
+					if readParams >= len(array) {
+						break
 					}
-					resultArray = append(resultArray, subResult.Result)
-					paramIndex = 0
 				}
 				executableResult.Result = resultArray
 			} else {
@@ -133,8 +140,14 @@ type Variable struct {
 
 func (c *Variable) Execute(queryContext QueryContext) (executableResult ExecutableResult, err error) {
 	if c.String != nil {
+		value := *c.String
+		if strings.Contains(value, "$") {
+			for k, v := range queryContext.Parameters {
+				value = strings.ReplaceAll(value, fmt.Sprintf("$%s", k), fmt.Sprintf("%v", v))
+			}
+		}
 		executableResult = ExecutableResult{
-			Result: *c.String,
+			Result: value,
 		}
 	} else if c.Variable != nil {
 		if value, hasValue := queryContext.Parameters[*c.Variable]; hasValue {
