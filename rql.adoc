@@ -37,8 +37,8 @@
 .Simple variable
 ----
 {
-    GET foo => result => {
-        SET 'fizz' '#result'
+    GET foo -> result -> {
+        SET 'fizz' $result
     }
 }
 ----
@@ -46,8 +46,8 @@
 .List variable variables iteration
 ----
 {
-    LRANGE 'users' 0 -1 => users => MAP user => {
-        SET 'user#user' 'OK'
+    LRANGE 'users' 0 -1 -> users -> {
+        SET 'user$user' 'OK'
     }
 }
 ----
@@ -56,8 +56,8 @@
 ----
 {
     DEL 'users'
-    HGETALL 'user:10' => fieldsAndValues => MAP key, value => {
-        ECHO 'field: #key, value : #value'
+    HGETALL 'user:10' -> key, value -> {
+        ECHO 'field: $key, value : $value'
     }
 }
 ----
