@@ -203,6 +203,6 @@ func printResult(result interface{}) {
 			printResult(item)
 		}
 	} else {
-		fmt.Println(result)
+		Print(result)
 	}
 }
