@@ -7,17 +7,61 @@ import (
 	"strings"
 )
 
-func loadEnv(params *Parameters, envName string) {
-	if home, err := os.UserHomeDir(); err != nil {
-		PrintErrorAndExit(err)
+type SetEnvSubCommand struct{}
+
+func (e SetEnvSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.SetEnv.Cmd.Happened()
+}
+
+func (e SetEnvSubCommand) Execute(parameters *Parameters) (err error) {
+	file, _ := json.MarshalIndent(parameters.SetEnv.ConnectParameters, "", " ")
+	var home string
+	if home, err = os.UserHomeDir(); err != nil {
+		return err
+	} else {
+		if err = os.MkdirAll(fmt.Sprintf("%s/.redis-query", home), 0777); err != nil {
+			return err
+		}
+		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *parameters.SetEnv.Name), file, 0777); err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+type LoadEnvSubCommand struct{}
+
+func (l LoadEnvSubCommand) Accept(parameters *Parameters) bool {
+	return (parameters.Scan.Cmd.Happened() && *parameters.Scan.EnvName != "") ||
+		(parameters.Command.Cmd.Happened() && *parameters.Command.EnvName != "") ||
+		(parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "")
+}
+
+func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
+	if parameters.Scan.Cmd.Happened() && *parameters.Scan.EnvName != "" {
+		err = loadEnv(parameters.Scan.EnvName, &parameters.Scan.Connect)
+	}
+	if parameters.Command.Cmd.Happened() && *parameters.Command.EnvName != "" {
+		err = loadEnv(parameters.Command.EnvName, &parameters.Query.Connect)
+	}
+	if parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "" {
+		err = loadEnv(parameters.Query.EnvName, &parameters.Query.Connect)
+	}
+	return err
+}
+
+func loadEnv(envName *string, connectParameters *ConnectParameters) (err error) {
+	var home string
+	if home, err = os.UserHomeDir(); err != nil {
+		return err
 	} else {
 		var file []byte
-		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, envName)); err != nil {
+		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *envName)); err != nil {
 			return
 		} else {
 			var loadedParams ConnectParameters
 			if err = json.Unmarshal(file, &loadedParams); err != nil {
-				PrintErrorAndExit(err)
+				return err
 			}
 			var connect ConnectParameters
 			setIfNotDefault(&connect.Host, loadedParams.Host)
@@ -28,20 +72,28 @@ func loadEnv(params *Parameters, envName string) {
 			setIfNotDefault(&connect.Password, loadedParams.Password)
 			setIfNotDefault(&connect.SentinelAddrs, loadedParams.SentinelAddrs)
 
-			params.Command.Connect = connect
-			params.Scan.Connect = connect
+			*connectParameters = connect
 		}
 	}
+	return err
 }
 
-func delEnv(params Parameters) {
-	if home, err := os.UserHomeDir(); err != nil {
-		PrintErrorAndExit(err)
+type DelEnvSubCommand struct{}
+
+func (d DelEnvSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.DelEnv.Cmd.Happened()
+}
+
+func (d DelEnvSubCommand) Execute(parameters *Parameters) (err error) {
+	var home string
+	if home, err = os.UserHomeDir(); err != nil {
+		return err
 	} else {
-		if err = os.Remove(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.DelEnv.Name)); err != nil {
-			PrintErrorAndExit(err)
+		if err = os.Remove(fmt.Sprintf("%s/.redis-query/%s.json", home, *parameters.DelEnv.Name)); err != nil {
+			return err
 		}
 	}
+	return err
 }
 
 func setIfNotDefault[T comparable](param *T, loadedParameter T) {
@@ -50,27 +102,20 @@ func setIfNotDefault[T comparable](param *T, loadedParameter T) {
 	}
 }
 
-func saveEnv(params Parameters) {
-	file, _ := json.MarshalIndent(params.SetEnv.ConnectParameters, "", " ")
-	if home, err := os.UserHomeDir(); err != nil {
-		PrintErrorAndExit(err)
-	} else {
-		if err = os.MkdirAll(fmt.Sprintf("%s/.redis-query", home), 0777); err != nil {
-			PrintErrorAndExit(err)
-		}
-		if err = os.WriteFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.SetEnv.Name), file, 0777); err != nil {
-			PrintErrorAndExit(err)
-		}
-	}
+type ListEnvSubCommand struct{}
+
+func (l ListEnvSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.ListEnv.Cmd.Happened()
 }
 
-func listEnv() {
-	if home, err := os.UserHomeDir(); err != nil {
-		PrintErrorAndExit(err)
+func (l ListEnvSubCommand) Execute(parameters *Parameters) (err error) {
+	var home string
+	if home, err = os.UserHomeDir(); err != nil {
+		return err
 	} else {
 		var dirEntries []os.DirEntry
 		if dirEntries, err = os.ReadDir(fmt.Sprintf("%s/.redis-query", home)); err != nil {
-			PrintErrorAndExit(err)
+			return err
 		}
 		for _, entry := range dirEntries {
 			if strings.Contains(entry.Name(), ".json") {
@@ -78,17 +123,26 @@ func listEnv() {
 			}
 		}
 	}
+	return err
 }
 
-func describeEnv(params Parameters) {
-	if home, err := os.UserHomeDir(); err != nil {
-		PrintErrorAndExit(err)
+type DescribeEnvSubCommand struct{}
+
+func (d DescribeEnvSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.DescribeEnv.Cmd.Happened()
+}
+
+func (d DescribeEnvSubCommand) Execute(parameters *Parameters) (err error) {
+	var home string
+	if home, err = os.UserHomeDir(); err != nil {
+		return err
 	} else {
 		var file []byte
-		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *params.DescribeEnv.Name)); err != nil {
-			return
+		if file, err = os.ReadFile(fmt.Sprintf("%s/.redis-query/%s.json", home, *parameters.DescribeEnv.Name)); err != nil {
+			return err
 		} else {
 			Print(string(file))
 		}
 	}
+	return err
 }

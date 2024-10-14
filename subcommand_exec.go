@@ -9,25 +9,31 @@ import (
 const fixArgumentPlaceHolder = "{?}"
 const iteratorArgumentPlaceHolder = "{>}"
 
-func executeCommands(params Parameters) {
-	client := connectToRedis(params.Command.Connect)
+type ExecSubCommand struct{}
+
+func (s ExecSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.Command.Cmd.Happened()
+}
+
+func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
+	client := connectToRedis(parameters.Command.Connect)
 	result := make(chan interface{}, 10)
-	executor := NewExecutor(client, result, *params.Command.Pipeline, *params.Command.NoOutput)
+	executor := NewExecutor(client, result, *parameters.Command.Pipeline, *parameters.Command.NoOutput)
 	go func() {
 		rowNumber := 0
 		for r := range result {
-			formatIfNeededAndPrint(&rowNumber, "", r, &params.Command.Format)
+			formatIfNeededAndPrint(&rowNumber, "", r, &parameters.Command.Format)
 			executor.Done()
 		}
 	}()
-	if needAtLeastOneStdInArgument(&params.Command) {
+	if needAtLeastOneStdInArgument(&parameters.Command) {
 		needToExecuteCommand := true
 		scanner := bufio.NewScanner(os.Stdin)
-		if err := scanner.Err(); err != nil {
-			PrintErrorAndExit(err)
+		if err = scanner.Err(); err != nil {
+			return err
 		}
 		for needToExecuteCommand {
-			for _, command := range *params.Command.Commands {
+			for _, command := range *parameters.Command.Commands {
 				args := ParseArguments(command)
 				doArgs := make([]interface{}, len(args))
 				var staticArg *string
@@ -57,7 +63,7 @@ func executeCommands(params Parameters) {
 			}
 		}
 	} else {
-		for _, command := range *params.Command.Commands {
+		for _, command := range *parameters.Command.Commands {
 			args := ParseArguments(command)
 			doArgs := make([]interface{}, len(args))
 			for i, arg := range args {
@@ -68,6 +74,7 @@ func executeCommands(params Parameters) {
 	}
 	executor.executePipelineCommands()
 	executor.Wait()
+	return err
 }
 
 func needAtLeastOneStdInArgument(commands *CommandCommand) bool {

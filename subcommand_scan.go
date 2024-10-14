@@ -6,53 +6,60 @@ import (
 	"fmt"
 )
 
-func scan(params Parameters) {
-	client := connectToRedis(params.Scan.Connect)
+type ScanSubCommand struct{}
+
+func (s ScanSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.Scan.Cmd.Happened()
+}
+
+func (s ScanSubCommand) Execute(parameters *Parameters) (err error) {
+	client := connectToRedis(parameters.Scan.Connect)
 	cursor := uint64(0)
-	var err error
 	var result []string
 	var keyType string
-	key := *params.Scan.KeyToScan
+	key := *parameters.Scan.KeyToScan
 	if key != "" {
 		if keyType, err = client.Type(context.Background(), key).Result(); err != nil {
-			PrintErrorAndExit(err)
+			return err
 		}
 	}
 	rowNumber := 0
 	for {
 		if keyType == "set" {
-			if result, cursor, err = client.SScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-				PrintErrorAndExit(err)
+			if result, cursor, err = client.SScan(context.Background(), key, cursor, *parameters.Scan.Pattern, int64(*parameters.Scan.Count)).Result(); err != nil {
+				return err
 			}
 		} else if keyType == "zset" {
-			if result, cursor, err = client.ZScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-				PrintErrorAndExit(err)
+			if result, cursor, err = client.ZScan(context.Background(), key, cursor, *parameters.Scan.Pattern, int64(*parameters.Scan.Count)).Result(); err != nil {
+				return err
 			}
 		} else if keyType == "hash" {
-			if result, cursor, err = client.HScan(context.Background(), key, cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-				PrintErrorAndExit(err)
+			if result, cursor, err = client.HScan(context.Background(), key, cursor, *parameters.Scan.Pattern, int64(*parameters.Scan.Count)).Result(); err != nil {
+				return err
 			}
 		} else if keyType == "" {
-			if *params.Scan.Type != "" {
-				if result, cursor, err = client.ScanType(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count), *params.Scan.Type).Result(); err != nil {
-					PrintErrorAndExit(err)
+			if *parameters.Scan.Type != "" {
+				if result, cursor, err = client.ScanType(context.Background(), cursor, *parameters.Scan.Pattern, int64(*parameters.Scan.Count), *parameters.Scan.Type).Result(); err != nil {
+					return err
 				}
 			} else {
-				if result, cursor, err = client.Scan(context.Background(), cursor, *params.Scan.Pattern, int64(*params.Scan.Count)).Result(); err != nil {
-					PrintErrorAndExit(err)
+				if result, cursor, err = client.Scan(context.Background(), cursor, *parameters.Scan.Pattern, int64(*parameters.Scan.Count)).Result(); err != nil {
+					return err
 				}
 			}
 		} else {
-			PrintErrorAndExit(errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType)))
+			err = errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType))
+			return err
 		}
 		for _, key = range result {
-			if *params.Scan.Limit > 0 && rowNumber >= *params.Scan.Limit {
+			if *parameters.Scan.Limit > 0 && rowNumber >= *parameters.Scan.Limit {
 				break
 			}
-			formatIfNeededAndPrint(&rowNumber, "", key, &params.Scan.Format)
+			formatIfNeededAndPrint(&rowNumber, "", key, &parameters.Scan.Format)
 		}
-		if cursor == 0 || (*params.Scan.Limit > 0 && rowNumber >= *params.Scan.Limit) {
+		if cursor == 0 || (*parameters.Scan.Limit > 0 && rowNumber >= *parameters.Scan.Limit) {
 			break
 		}
 	}
+	return err
 }

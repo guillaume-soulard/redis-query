@@ -10,6 +10,27 @@ import (
 	"strings"
 )
 
+type QuerySubCommand struct{}
+
+func (q QuerySubCommand) Accept(parameters *Parameters) bool {
+	return parameters.Query.Cmd.Happened()
+}
+
+func (q QuerySubCommand) Execute(parameters *Parameters) (err error) {
+	var executable Executable
+	if executable, err = Parse(*parameters.Query.Query); err != nil {
+		return err
+	}
+	var result ExecutableResult
+	if result, err = executable.Execute(QueryContext{
+		Client: connectToRedis(parameters.Query.Connect),
+	}); err != nil {
+		return err
+	}
+	printResult(result.Result)
+	return err
+}
+
 type QueryContext struct {
 	Client     *redis.Client
 	Parameters map[string]interface{}
@@ -183,21 +204,6 @@ var (
 func Parse(query string) (block *Query, err error) {
 	block, err = parser.ParseString("", query)
 	return block, err
-}
-
-func executeQuery(params Parameters) {
-	var err error
-	var executable Executable
-	if executable, err = Parse(*params.Query.Query); err != nil {
-		PrintErrorAndExit(err)
-	}
-	var result ExecutableResult
-	if result, err = executable.Execute(QueryContext{
-		Client: connectToRedis(params.Query.Connect),
-	}); err != nil {
-		PrintErrorAndExit(err)
-	}
-	printResult(result.Result)
 }
 
 func printResult(result interface{}) {

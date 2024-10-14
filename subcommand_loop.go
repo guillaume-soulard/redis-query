@@ -5,21 +5,28 @@ import (
 	"math"
 )
 
-func loop(params Parameters) {
+type LoopSubCommand struct{}
+
+func (l LoopSubCommand) Accept(parameters *Parameters) bool {
+	return parameters.Loop.Cmd.Happened()
+}
+
+func (l LoopSubCommand) Execute(parameters *Parameters) (err error) {
 	from := 0
 	to := math.MaxInt
 	step := 1
-	if params.Loop.LoopFrom != nil {
-		from = *params.Loop.LoopFrom
+	if parameters.Loop.LoopFrom != nil {
+		from = *parameters.Loop.LoopFrom
 	}
-	if params.Loop.LoopTo != nil {
-		to = *params.Loop.LoopTo
+	if parameters.Loop.LoopTo != nil {
+		to = *parameters.Loop.LoopTo
 	}
-	if params.Loop.LoopStep != nil {
-		step = *params.Loop.LoopStep
+	if parameters.Loop.LoopStep != nil {
+		step = *parameters.Loop.LoopStep
 	}
 	row := 1
 	for i := from; i <= to; i += step {
 		formatIfNeededAndPrint(&row, "", fmt.Sprintf("%d", i), &params.Loop.Format)
 	}
+	return err
 }
