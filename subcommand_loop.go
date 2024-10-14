@@ -26,7 +26,7 @@ func (l LoopSubCommand) Execute(parameters *Parameters) (err error) {
 	}
 	row := 1
 	for i := from; i <= to; i += step {
-		formatIfNeededAndPrint(&row, "", fmt.Sprintf("%d", i), &params.Loop.Format)
+		formatIfNeededAndPrint(&row, "", fmt.Sprintf("%d", i), &parameters.Loop.Format)
 	}
 	return err
 }

@@ -123,16 +123,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 								return executableResult, err
 							}
 							resultArray = append(resultArray, subResult.Result)
-							paramIndex = 0
 						}
-					}
-					if paramIndex >= len(blockContext.Parameters) {
-						var subResult ExecutableResult
-						if subResult, err = c.Block.Execute(blockContext); err != nil {
-							return executableResult, err
-						}
-						resultArray = append(resultArray, subResult.Result)
-						paramIndex = 0
 					}
 					if readParams >= len(array) {
 						break
