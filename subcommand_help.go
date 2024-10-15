@@ -10,7 +10,8 @@ func (h HelpSubcommand) Accept(parameters *Parameters) bool {
 		!parameters.Scan.Cmd.Happened() &&
 		!parameters.Loop.Cmd.Happened() &&
 		!parameters.Command.Cmd.Happened() &&
-		!parameters.Query.Cmd.Happened()
+		!parameters.Query.Cmd.Happened() &&
+		!parameters.Connect.Cmd.Happened()
 }
 
 func (h HelpSubcommand) Execute(parameters *Parameters) (err error) {
