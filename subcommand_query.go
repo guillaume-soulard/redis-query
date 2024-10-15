@@ -100,14 +100,14 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 			args[i+1] = argResult.Result
 		}
 	}
-	var cmdresult interface{}
-	if cmdresult, err = executableContext.Client.Do(context.Background(), args...).Result(); err != nil {
+	var cmdResult interface{}
+	if cmdResult, err = executableContext.Client.Do(context.Background(), args...).Result(); err != nil {
 		return executableResult, err
 	}
 	if c.Block != nil {
 		if c.Block.BlockArgs != nil && c.Block.BlockArgs.Args != nil && len(c.Block.BlockArgs.Args) > 0 {
 			blockContext := executableContext.Copy()
-			if array, isArray := cmdresult.([]interface{}); isArray {
+			if array, isArray := cmdResult.([]interface{}); isArray {
 				blockContext.Parameters = make(map[string]interface{})
 				paramIndex := 0
 				resultArray := make([]interface{}, 0, len(array)/len(c.Block.BlockArgs.Args))
@@ -131,7 +131,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 				}
 				executableResult.Result = resultArray
 			} else {
-				blockContext.Parameters = map[string]interface{}{"": cmdresult}
+				blockContext.Parameters = map[string]interface{}{"": cmdResult}
 				executableResult, err = c.Block.Execute(blockContext)
 			}
 		} else {
@@ -139,7 +139,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 		}
 	} else {
 		executableResult = ExecutableResult{
-			Result: cmdresult,
+			Result: cmdResult,
 		}
 	}
 	return executableResult, err
@@ -147,15 +147,15 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 
 type Variable struct {
 	String   *string `(@String`
-	Variable *string `| ("$" @Ident))`
+	Variable *string `| ("#" @Ident))`
 }
 
 func (c *Variable) Execute(queryContext QueryContext) (executableResult ExecutableResult, err error) {
 	if c.String != nil {
 		value := *c.String
-		if strings.Contains(value, "$") {
+		if strings.Contains(value, "#") {
 			for k, v := range queryContext.Parameters {
-				value = strings.ReplaceAll(value, fmt.Sprintf("$%s", k), fmt.Sprintf("%v", v))
+				value = strings.ReplaceAll(value, fmt.Sprintf("#%s", k), fmt.Sprintf("%v", v))
 			}
 		}
 		executableResult = ExecutableResult{
@@ -179,7 +179,7 @@ var (
 	rqlLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{`Ident`, `[a-zA-Z_][a-zA-Z0-9_]*`},
 		{`Command`, `[a-zA-Z][a-zA-Z0-9]*`},
-		{"Punct", `[${}>-]`},
+		{"Punct", `[#{}>-]`},
 		{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
 		{`String`, `'[^']*'|"[^"]*"`},
 		{"whitespace", `\s+`},
