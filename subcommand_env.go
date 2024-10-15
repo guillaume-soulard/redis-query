@@ -42,7 +42,7 @@ func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
 		err = loadEnv(parameters.Scan.EnvName, &parameters.Scan.Connect)
 	}
 	if parameters.Command.Cmd.Happened() && *parameters.Command.EnvName != "" {
-		err = loadEnv(parameters.Command.EnvName, &parameters.Query.Connect)
+		err = loadEnv(parameters.Command.EnvName, &parameters.Command.Connect)
 	}
 	if parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "" {
 		err = loadEnv(parameters.Query.EnvName, &parameters.Query.Connect)

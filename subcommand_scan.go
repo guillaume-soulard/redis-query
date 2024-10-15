@@ -51,11 +51,11 @@ func (s ScanSubCommand) Execute(parameters *Parameters) (err error) {
 			err = errors.New(fmt.Sprintf("Unable to scan key type: %s", keyType))
 			return err
 		}
-		for _, key = range result {
+		for _, k := range result {
 			if *parameters.Scan.Limit > 0 && rowNumber >= *parameters.Scan.Limit {
 				break
 			}
-			formatIfNeededAndPrint(&rowNumber, "", key, &parameters.Scan.Format)
+			formatIfNeededAndPrint(&rowNumber, "", k, &parameters.Scan.Format)
 		}
 		if cursor == 0 || (*parameters.Scan.Limit > 0 && rowNumber >= *parameters.Scan.Limit) {
 			break
