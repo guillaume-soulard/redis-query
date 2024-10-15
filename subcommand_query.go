@@ -105,7 +105,7 @@ func (b *Block) Execute(executableContext QueryContext) (executableResult Execut
 	result := make([]interface{}, len(b.Commands))
 	blockContext := executableContext.Copy()
 	blockContext.Env = b.GetEnv()
-	if err = b.SetDb(executableContext); err != nil {
+	if err = b.SetDb(blockContext); err != nil {
 		return commandResult, err
 	}
 	for i, command := range b.Commands {
@@ -114,7 +114,7 @@ func (b *Block) Execute(executableContext QueryContext) (executableResult Execut
 		}
 		result[i] = commandResult.Result
 	}
-	if err = b.RestoreDb(executableContext); err != nil {
+	if err = b.RestoreDb(blockContext); err != nil {
 		return commandResult, err
 	}
 	executableResult = ExecutableResult{
