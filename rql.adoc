@@ -11,7 +11,7 @@
 ----
 {
   // some commands
-} PIPELINE 10, DB 1, TRANSACTIONAL, ENV prod
+} DB 1, ENV prod
 ----
 
 .Comments

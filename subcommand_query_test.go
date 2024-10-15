@@ -57,7 +57,7 @@ func Test_Parse_should_parse_2_nested_commands(t *testing.T) {
 
 func Test_Parse_should_parse_2_nested_commands_with_args(t *testing.T) {
 	// GIVEN
-	query := `{ GET 'test' -> param -> { SET 'foo' $param }}`
+	query := `{ GET 'test' -> param -> { SET 'foo' #param }}`
 	// WHEN
 	block, err := Parse(query)
 	// THEN
@@ -68,4 +68,41 @@ func Test_Parse_should_parse_2_nested_commands_with_args(t *testing.T) {
 	assert.Equal(t, "SET", *block.Block.Commands[0].Block.Commands[0].Name)
 	assert.Equal(t, "foo", *block.Block.Commands[0].Block.Commands[0].Args[0].String)
 	assert.Equal(t, "param", *block.Block.Commands[0].Block.Commands[0].Args[1].Variable)
+}
+
+func Test_Parse_should_parse_one_block_property(t *testing.T) {
+	// GIVEN
+	query := `{ GET 'foo' } Db 1`
+	// WHEN
+	block, err := Parse(query)
+	// THEN
+	assert.NoError(t, err)
+	assert.Equal(t, "GET", *block.Block.Commands[0].Name)
+	assert.Equal(t, "foo", *block.Block.Commands[0].Args[0].String)
+	assert.Equal(t, 1, *block.Block.BlockProperties[0].Db)
+}
+
+func Test_Parse_should_parse_env(t *testing.T) {
+	// GIVEN
+	query := `{ GET 'foo' } ENV 'prod'`
+	// WHEN
+	block, err := Parse(query)
+	// THEN
+	assert.NoError(t, err)
+	assert.Equal(t, "GET", *block.Block.Commands[0].Name)
+	assert.Equal(t, "foo", *block.Block.Commands[0].Args[0].String)
+	assert.Equal(t, "prod", *block.Block.BlockProperties[0].Env)
+}
+
+func Test_Parse_should_parse_two_block_properties(t *testing.T) {
+	// GIVEN
+	query := `{ GET 'foo' } Db 1, ENV 'prod'`
+	// WHEN
+	block, err := Parse(query)
+	// THEN
+	assert.NoError(t, err)
+	assert.Equal(t, "GET", *block.Block.Commands[0].Name)
+	assert.Equal(t, "foo", *block.Block.Commands[0].Args[0].String)
+	assert.Equal(t, 1, *block.Block.BlockProperties[0].Db)
+	assert.Equal(t, "prod", *block.Block.BlockProperties[1].Env)
 }

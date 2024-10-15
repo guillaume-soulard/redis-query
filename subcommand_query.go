@@ -7,6 +7,7 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/go-redis/redis/v8"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,8 @@ func (q QuerySubCommand) Execute(parameters *Parameters) (err error) {
 	}
 	var result ExecutableResult
 	if result, err = executable.Execute(QueryContext{
-		Client: connectToRedis(parameters.Query.Connect),
+		Clients:    make(map[string]*redis.Client),
+		Parameters: parameters,
 	}); err != nil {
 		return err
 	}
@@ -32,13 +34,41 @@ func (q QuerySubCommand) Execute(parameters *Parameters) (err error) {
 }
 
 type QueryContext struct {
-	Client     *redis.Client
-	Parameters map[string]interface{}
+	Clients         map[string]*redis.Client
+	QueryParameters map[string]interface{}
+	Env             *string
+	Parameters      *Parameters
 }
 
-func (c QueryContext) Copy() QueryContext {
+func (c *QueryContext) GetClient() (client *redis.Client, err error) {
+	var exists bool
+	var envToUse string
+	if c.Env == nil {
+		envToUse = "default"
+	} else {
+		envToUse = *c.Env
+	}
+	if client, exists = c.Clients[envToUse]; exists {
+		return client, err
+	}
+	if envToUse == "default" {
+		client = connectToRedis(c.Parameters.Query.Connect)
+	} else {
+		var connect ConnectParameters
+		if err = loadEnv(&envToUse, &connect); err != nil {
+			return client, err
+		}
+		client = connectToRedis(connect)
+	}
+	c.Clients[envToUse] = client
+	return client, err
+}
+
+func (c *QueryContext) Copy() QueryContext {
 	return QueryContext{
-		Client: c.Client,
+		Clients:         c.Clients,
+		Parameters:      c.Parameters,
+		QueryParameters: c.QueryParameters,
 	}
 }
 
@@ -59,23 +89,95 @@ func (q *Query) Execute(executableContext QueryContext) (executableResult Execut
 }
 
 type Block struct {
-	BlockArgs *BlockArgs `[@@ "-" ">"]`
-	Commands  []Command  `"{" (@@)* "}"`
+	BlockArgs       *BlockArgs        `[@@ "-" ">"]`
+	Commands        []Command         `"{" (@@)* "}"`
+	BlockProperties []BlockProperties `[@@ ("," @@)* ]`
+	Db              *int
+}
+
+type BlockProperties struct {
+	Db  *int    `("Db" @Number) |`
+	Env *string `("ENV" @String)`
 }
 
 func (b *Block) Execute(executableContext QueryContext) (executableResult ExecutableResult, err error) {
 	var commandResult ExecutableResult
 	result := make([]interface{}, len(b.Commands))
+	blockContext := executableContext.Copy()
+	blockContext.Env = b.GetEnv()
+	if err = b.SetDb(executableContext); err != nil {
+		return commandResult, err
+	}
 	for i, command := range b.Commands {
-		if commandResult, err = command.Execute(executableContext); err != nil {
+		if commandResult, err = command.Execute(blockContext); err != nil {
 			return executableResult, err
 		}
 		result[i] = commandResult.Result
+	}
+	if err = b.RestoreDb(executableContext); err != nil {
+		return commandResult, err
 	}
 	executableResult = ExecutableResult{
 		Result: result,
 	}
 	return executableResult, err
+}
+
+func (b *Block) GetEnv() *string {
+	for _, property := range b.BlockProperties {
+		if property.Env != nil {
+			return property.Env
+		}
+	}
+	return nil
+}
+
+func (b *Block) SetDb(executableContext QueryContext) (err error) {
+	dbToSwitch := b.GetDbToSwitch()
+	if dbToSwitch != nil {
+		var client *redis.Client
+		if client, err = executableContext.GetClient(); err != nil {
+			return err
+		}
+		var infos interface{}
+		if infos, err = client.Do(context.Background(), "CLIENT", "INFO").Result(); err != nil {
+			return err
+		}
+		for _, v := range strings.Split(infos.(string), " ") {
+			item := strings.Split(v, "=")
+			if item[0] == "db" {
+				var originalDb int
+				if originalDb, err = strconv.Atoi(item[1]); err != nil {
+					return err
+				}
+				b.Db = &originalDb
+			}
+		}
+		err = client.Do(context.Background(), "SELECT", *dbToSwitch).Err()
+	}
+	return err
+}
+
+func (b *Block) RestoreDb(queryContext QueryContext) (err error) {
+	if b.Db != nil {
+		var client *redis.Client
+		if client, err = queryContext.GetClient(); err != nil {
+			return err
+		}
+		err = client.Do(context.Background(), "SELECT", *b.Db).Err()
+	}
+	return err
+}
+
+func (b *Block) GetDbToSwitch() *int {
+	if b.BlockProperties != nil {
+		for _, property := range b.BlockProperties {
+			if property.Db != nil {
+				return property.Db
+			}
+		}
+	}
+	return nil
 }
 
 type BlockArgs struct {
@@ -101,23 +203,30 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 		}
 	}
 	var cmdResult interface{}
-	if cmdResult, err = executableContext.Client.Do(context.Background(), args...).Result(); err != nil {
+	var client *redis.Client
+	if client, err = executableContext.GetClient(); err != nil {
+		return executableResult, err
+	}
+	if cmdResult, err = client.Do(context.Background(), args...).Result(); err != nil {
 		return executableResult, err
 	}
 	if c.Block != nil {
 		if c.Block.BlockArgs != nil && c.Block.BlockArgs.Args != nil && len(c.Block.BlockArgs.Args) > 0 {
 			blockContext := executableContext.Copy()
 			if array, isArray := cmdResult.([]interface{}); isArray {
-				blockContext.Parameters = make(map[string]interface{})
+				blockContext.QueryParameters = make(map[string]interface{})
 				paramIndex := 0
 				resultArray := make([]interface{}, 0, len(array)/len(c.Block.BlockArgs.Args))
 				readParams := 0
 				for {
+					if len(array) == 0 {
+						break
+					}
 					for _, arg := range c.Block.BlockArgs.Args {
-						blockContext.Parameters[arg] = array[paramIndex]
+						blockContext.QueryParameters[arg] = array[paramIndex]
 						paramIndex++
 						readParams++
-						if paramIndex >= len(blockContext.Parameters) {
+						if paramIndex >= len(blockContext.QueryParameters) {
 							var subResult ExecutableResult
 							if subResult, err = c.Block.Execute(blockContext); err != nil {
 								return executableResult, err
@@ -131,7 +240,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 				}
 				executableResult.Result = resultArray
 			} else {
-				blockContext.Parameters = map[string]interface{}{"": cmdResult}
+				blockContext.QueryParameters = map[string]interface{}{c.Block.BlockArgs.Args[0]: cmdResult}
 				executableResult, err = c.Block.Execute(blockContext)
 			}
 		} else {
@@ -154,7 +263,7 @@ func (c *Variable) Execute(queryContext QueryContext) (executableResult Executab
 	if c.String != nil {
 		value := *c.String
 		if strings.Contains(value, "#") {
-			for k, v := range queryContext.Parameters {
+			for k, v := range queryContext.QueryParameters {
 				value = strings.ReplaceAll(value, fmt.Sprintf("#%s", k), fmt.Sprintf("%v", v))
 			}
 		}
@@ -162,7 +271,7 @@ func (c *Variable) Execute(queryContext QueryContext) (executableResult Executab
 			Result: value,
 		}
 	} else if c.Variable != nil {
-		if value, hasValue := queryContext.Parameters[*c.Variable]; hasValue {
+		if value, hasValue := queryContext.QueryParameters[*c.Variable]; hasValue {
 			executableResult = ExecutableResult{
 				Result: value,
 			}
@@ -179,7 +288,7 @@ var (
 	rqlLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{`Ident`, `[a-zA-Z_][a-zA-Z0-9_]*`},
 		{`Command`, `[a-zA-Z][a-zA-Z0-9]*`},
-		{"Punct", `[#{}>-]`},
+		{"Punct", `[,#{}>-]`},
 		{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
 		{`String`, `'[^']*'|"[^"]*"`},
 		{"whitespace", `\s+`},
