@@ -16,6 +16,7 @@ type Parameters struct {
 	Scan        ScanCommand
 	Command     CommandCommand
 	Query       QueryCommand
+	Connect     ConnectCommand
 }
 
 type EnvCommand struct {
@@ -73,6 +74,12 @@ type QueryCommand struct {
 	Query   *string
 	Connect ConnectParameters
 	Format  FormatParameters
+	Cmd     *argparse.Command
+}
+
+type ConnectCommand struct {
+	EnvName *string
+	Connect ConnectParameters
 	Cmd     *argparse.Command
 }
 
@@ -134,6 +141,11 @@ func parseParameters() Parameters {
 	setFormat(&params.Query.Format, queryCommand)
 	setConnect(&params.Query.Connect, queryCommand)
 	params.Query.Cmd = queryCommand
+
+	connectCommand := parser.NewCommand("connect", "connect to the right redis instance")
+	params.Connect.EnvName = connectCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
+	setConnect(&params.Connect.Connect, connectCommand)
+	params.Connect.Cmd = connectCommand
 
 	if err := parser.Parse(os.Args); err != nil {
 		PrintErrorAndExit(errors.New(parser.Usage(nil)))

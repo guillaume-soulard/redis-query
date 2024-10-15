@@ -34,7 +34,8 @@ type LoadEnvSubCommand struct{}
 func (l LoadEnvSubCommand) Accept(parameters *Parameters) bool {
 	return (parameters.Scan.Cmd.Happened() && *parameters.Scan.EnvName != "") ||
 		(parameters.Command.Cmd.Happened() && *parameters.Command.EnvName != "") ||
-		(parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "")
+		(parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "") ||
+		(parameters.Connect.Cmd.Happened() && *parameters.Connect.EnvName != "")
 }
 
 func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
@@ -46,6 +47,9 @@ func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
 	}
 	if parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "" {
 		err = loadEnv(parameters.Query.EnvName, &parameters.Query.Connect)
+	}
+	if parameters.Connect.Cmd.Happened() && *parameters.Connect.EnvName != "" {
+		err = loadEnv(parameters.Connect.EnvName, &parameters.Connect.Connect)
 	}
 	return err
 }
