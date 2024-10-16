@@ -306,12 +306,15 @@ func Parse(query string) (block *Query, err error) {
 	return block, err
 }
 
-func printResult(result interface{}) {
+func printResult(result interface{}) (output []string) {
+	output = make([]string, 0)
 	if array, isArray := result.([]interface{}); isArray {
 		for _, item := range array {
-			printResult(item)
+			output = append(output, printResult(item)...)
 		}
 	} else {
 		Print(result)
+		output = append(output, fmt.Sprintf("%v", result))
 	}
+	return output
 }

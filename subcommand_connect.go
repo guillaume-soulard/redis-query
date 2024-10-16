@@ -1,13 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
+	"github.com/c-bata/go-prompt"
 	"github.com/go-redis/redis/v8"
-	"os"
+	"slices"
 	"strings"
 )
+
+var commandMap map[string]*redis.CommandInfo
+var lastResult []string = make([]string, 0)
 
 type ConnectSubCommand struct{}
 
@@ -17,31 +20,49 @@ func (q ConnectSubCommand) Accept(parameters *Parameters) bool {
 
 func (q ConnectSubCommand) Execute(parameters *Parameters) (err error) {
 	client := connectToRedis(parameters.Connect.Connect)
-	err = showPrompt(parameters, client)
+	if err = loadCompletion(client); err != nil {
+		return err
+	}
+	err = showPrompt(client)
 	return err
 }
 
-func showPrompt(parameters *Parameters, client *redis.Client) (err error) {
-	r := bufio.NewReader(os.Stdin)
-	for {
-		var s string
-		for {
-			if _, err = fmt.Fprint(os.Stderr, fmt.Sprintf("%s> ", "redis")); err != nil {
-				return err
-			}
-			s, _ = r.ReadString('\n')
-			if s != "" {
-				break
-			}
+func loadCompletion(client *redis.Client) (err error) {
+	commandMap, err = client.Command(context.Background()).Result()
+	return err
+}
+
+func completer(d prompt.Document) []prompt.Suggest {
+	items := strings.Split(d.Text, " ")
+	s := make([]prompt.Suggest, 0)
+	if len(items) > 1 && len(lastResult) > 0 {
+		for _, r := range lastResult {
+			s = append(s, prompt.Suggest{
+				Text: r, Description: "",
+			})
 		}
+	} else {
+		for _, info := range commandMap {
+			s = append(s, prompt.Suggest{
+				Text: info.Name, Description: fmt.Sprintf("%s command", info.Name),
+			})
+		}
+	}
+	slices.SortFunc(s, func(a, b prompt.Suggest) int {
+		return strings.Compare(a.Text, b.Text)
+	})
+	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+}
+
+func showPrompt(client *redis.Client) (err error) {
+	for {
+		command := prompt.Input("redis> ", completer)
 		// TODO history with arrow up and down
-		// TODO completion
 		var result interface{}
-		cleanCommand := strings.TrimSuffix(s, "\n")
-		if strings.ToLower(cleanCommand) == "exit" {
+		if strings.ToLower(command) == "exit" {
 			break
 		}
-		argsStr := strings.Split(cleanCommand, " ")
+		argsStr := strings.Split(command, " ")
 		args := make([]interface{}, len(argsStr))
 		for i, a := range argsStr {
 			args[i] = a
@@ -49,7 +70,7 @@ func showPrompt(parameters *Parameters, client *redis.Client) (err error) {
 		if result, err = client.Do(context.Background(), args...).Result(); err != nil {
 			printResult(err)
 		} else {
-			printResult(result)
+			lastResult = printResult(result)
 		}
 	}
 	return err
