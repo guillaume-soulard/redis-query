@@ -41,7 +41,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 				Text: r, Description: "",
 			})
 		}
-	} else {
+	} else if len(items) == 1 {
 		for _, info := range commandMap {
 			s = append(s, prompt.Suggest{
 				Text: info.Name, Description: fmt.Sprintf("%s command", info.Name),
@@ -55,9 +55,14 @@ func completer(d prompt.Document) []prompt.Suggest {
 }
 
 func showPrompt(client *redis.Client) (err error) {
+	history := make([]string, 0, 10)
 	for {
-		command := prompt.Input("redis> ", completer)
-		// TODO history with arrow up and down
+		command := prompt.Input("redis> ", completer,
+			prompt.OptionHistory(history),
+			prompt.OptionCompletionOnDown(),
+			prompt.OptionShowCompletionAtStart(),
+		)
+		history = append(history, command)
 		var result interface{}
 		if strings.ToLower(command) == "exit" {
 			break
