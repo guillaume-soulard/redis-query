@@ -11,7 +11,7 @@
 ----
 {
   // some commands
-} DB 1, ENV prod
+} ENV prod
 ----
 
 .Comments
@@ -38,7 +38,7 @@
 ----
 {
     GET foo -> result -> {
-        SET 'fizz' $result
+        SET 'fizz #result'
     }
 }
 ----
@@ -47,7 +47,7 @@
 ----
 {
     LRANGE 'users' 0 -1 -> users -> {
-        SET 'user$user' 'OK'
+        SET 'user:#user' 'OK'
     }
 }
 ----
@@ -57,7 +57,7 @@
 {
     DEL 'users'
     HGETALL 'user:10' -> key, value -> {
-        ECHO 'field: $key, value : $value'
+        ECHO 'field: #key, value : #value'
     }
 }
 ----

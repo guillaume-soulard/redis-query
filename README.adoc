@@ -26,6 +26,11 @@ rq exec -c "get foo" -c "get bar"
 rq exec -c "KEYS *" | rq -c "type {?}"
 ----
 
+.Execute commands on a specific environment
+----
+rq exec -e production -c "PING"
+----
+
 === Scan
 
 .Scan keys (scan string keys for pattern * with batch size 1500 then return maximum 10 keys)
@@ -36,18 +41,6 @@ rq scan --pattern "*" --count 1500 -- limit 10 --type string
 .Scan a redis key with key parameter
 ----
 rq scan --pattern "*" --count 1500 -- limit 10 --key "the-set"
-----
-
-=== Scan
-
-.Scan a redis database
-----
-rq scan --pattern "*test*" --count 1000 --limit 10 --type string
-----
-
-.Scan a redis database
-----
-rq scan --pattern "*test*" --count 1000 --limit 10 --key akey
 ----
 
 === Managing environments
@@ -69,5 +62,19 @@ rq env describe --name dev
 
 .Describe an environment
 ----
-rq env revmove --name dev
+rq env remove --name dev
+----
+
+=== Connect
+
+.Connect on a redis instance
+----
+rq connect -e local
+----
+
+=== Query
+
+.Execute a RQL query
+----
+rq query -q "{ smembers 'aset' -> key -> { get #key } }"
 ----
