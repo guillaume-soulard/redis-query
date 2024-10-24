@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var commandMap map[string]*redis.CommandInfo
+var commandMap []interface{}
 var lastResult = make([]string, 0)
 
 type ConnectSubCommand struct{}
@@ -28,7 +28,11 @@ func (q ConnectSubCommand) Execute(parameters *Parameters) (err error) {
 }
 
 func loadCompletion(client *redis.Client) (err error) {
-	commandMap, err = client.Command(context.Background()).Result()
+	var result interface{}
+	if result, err = client.Do(context.Background(), "COMMAND").Result(); err != nil {
+		return err
+	}
+	commandMap = result.([]interface{})
 	return err
 }
 
@@ -42,9 +46,11 @@ func completer(d prompt.Document) []prompt.Suggest {
 			})
 		}
 	} else if len(items) == 1 {
-		for _, info := range commandMap {
+		for _, command := range commandMap {
+			info := command.([]interface{})
+			commandName := fmt.Sprintf("%v", info[0])
 			s = append(s, prompt.Suggest{
-				Text: info.Name, Description: fmt.Sprintf("%s command", info.Name),
+				Text: commandName, Description: fmt.Sprintf("%s command", commandName),
 			})
 		}
 	}
