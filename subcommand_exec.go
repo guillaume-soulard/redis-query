@@ -17,12 +17,12 @@ func (s ExecSubCommand) Accept(parameters *Parameters) bool {
 
 func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
 	client := connectToRedis(parameters.Command.Connect)
-	result := make(chan interface{}, 10)
+	result := make(chan Output, 10)
 	executor := NewExecutor(client, result, *parameters.Command.Pipeline, *parameters.Command.NoOutput)
 	go func() {
 		rowNumber := 0
 		for r := range result {
-			formatIfNeededAndPrint(&rowNumber, "", r, &parameters.Command.Format)
+			formatIfNeededAndPrint(&rowNumber, r.Stdin, r.Out, &parameters.Command.Format)
 			executor.Done()
 		}
 	}()
@@ -33,6 +33,7 @@ func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
 			return err
 		}
 		for needToExecuteCommand {
+			stdinArgs := make([]string, 0, 10)
 			for _, command := range *parameters.Command.Commands {
 				args := ParseArguments(command)
 				doArgs := make([]interface{}, len(args))
@@ -45,13 +46,16 @@ func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
 							}
 							text := scanner.Text()
 							staticArg = &text
+							stdinArgs = append(stdinArgs, text)
 						}
 						doArgs[i] = strings.ReplaceAll(arg, fixArgumentPlaceHolder, *staticArg)
 					} else if strings.Contains(arg, iteratorArgumentPlaceHolder) {
 						if needToExecuteCommand = scanner.Scan(); !needToExecuteCommand {
 							break
 						}
-						doArgs[i] = strings.ReplaceAll(arg, iteratorArgumentPlaceHolder, scanner.Text())
+						iteratorArg := scanner.Text()
+						stdinArgs = append(stdinArgs, iteratorArg)
+						doArgs[i] = strings.ReplaceAll(arg, iteratorArgumentPlaceHolder, iteratorArg)
 					} else {
 						doArgs[i] = arg
 					}
@@ -59,7 +63,7 @@ func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
 				if !needToExecuteCommand {
 					break
 				}
-				executor.executePipeline(doArgs)
+				executor.executePipeline(doArgs, stdinArgs)
 			}
 		}
 	} else {
@@ -69,7 +73,7 @@ func (s ExecSubCommand) Execute(parameters *Parameters) (err error) {
 			for i, arg := range args {
 				doArgs[i] = arg
 			}
-			executor.executePipeline(doArgs)
+			executor.executePipeline(doArgs, nil)
 		}
 	}
 	executor.executePipelineCommands()
