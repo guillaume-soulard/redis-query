@@ -44,7 +44,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `REV`, `BYSCORE`, `BYLEX` and `LIMIT` options."
+        "Added the ` + "`" + `REV` + "`" + `, ` + "`" + `BYSCORE` + "`" + `, ` + "`" + `BYLEX` + "`" + ` and ` + "`" + `LIMIT` + "`" + ` options."
       ]
     ],
     "arguments": [
@@ -339,7 +339,7 @@ const commandDocJson = `
     "history": [
       [
         "2.4.0",
-        "Accepts multiple `member` arguments."
+        "Accepts multiple ` + "`" + `member` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -467,7 +467,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `count` argument."
+        "Added the ` + "`" + `count` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -587,7 +587,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`SET` with the `!GET` argument",
+    "replaced_by": "` + "`" + `SET` + "`" + ` with the ` + "`" + `!GET` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -644,7 +644,7 @@ const commandDocJson = `
     "history": [
       [
         "4.0.0",
-        "Accepts multiple `element` arguments."
+        "Accepts multiple ` + "`" + `element` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -778,11 +778,11 @@ const commandDocJson = `
     "history": [
       [
         "4.0.0",
-        "Added the `ASYNC` flushing mode modifier."
+        "Added the ` + "`" + `ASYNC` + "`" + ` flushing mode modifier."
       ],
       [
         "6.2.0",
-        "Added the `SYNC` flushing mode modifier."
+        "Added the ` + "`" + `SYNC` + "`" + ` flushing mode modifier."
       ]
     ],
     "arguments": [
@@ -981,7 +981,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added the `entries_added` and `max_deleted_entry_id` arguments."
+        "Added the ` + "`" + `entries_added` + "`" + ` and ` + "`" + `max_deleted_entry_id` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -1087,19 +1087,19 @@ const commandDocJson = `
     "history": [
       [
         "3.0.0",
-        "Added the `COPY` and `REPLACE` options."
+        "Added the ` + "`" + `COPY` + "`" + ` and ` + "`" + `REPLACE` + "`" + ` options."
       ],
       [
         "3.0.6",
-        "Added the `KEYS` option."
+        "Added the ` + "`" + `KEYS` + "`" + ` option."
       ],
       [
         "4.0.7",
-        "Added the `AUTH` option."
+        "Added the ` + "`" + `AUTH` + "`" + ` option."
       ],
       [
         "6.0.0",
-        "Added the `AUTH2` option."
+        "Added the ` + "`" + `AUTH2` + "`" + ` option."
       ]
     ],
     "arguments": [
@@ -1348,7 +1348,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `IDLE` option and exclusive range intervals."
+        "Added the ` + "`" + `IDLE` + "`" + ` option and exclusive range intervals."
       ]
     ],
     "arguments": [
@@ -1440,11 +1440,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments",
+    "replaced_by": "` + "`" + `GEOSEARCH` + "`" + ` with the ` + "`" + `BYRADIUS` + "`" + ` and ` + "`" + `FROMMEMBER` + "`" + ` arguments",
     "history": [
       [
         "6.2.0",
-        "Added the `ANY` option for `COUNT`."
+        "Added the ` + "`" + `ANY` + "`" + ` option for ` + "`" + `COUNT` + "`" + `."
       ],
       [
         "7.0.0",
@@ -1581,7 +1581,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `PX` argument",
+    "replaced_by": "` + "`" + `SET` + "`" + ` with the ` + "`" + `PX` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -1670,7 +1670,7 @@ const commandDocJson = `
     "history": [
       [
         "2.4.0",
-        "Accepts multiple `member` arguments."
+        "Accepts multiple ` + "`" + `member` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -1717,7 +1717,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `MINID` trimming strategy and the `LIMIT` option."
+        "Added the ` + "`" + `MINID` + "`" + ` trimming strategy and the ` + "`" + `LIMIT` + "`" + ` option."
       ]
     ],
     "arguments": [
@@ -1879,7 +1879,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`LMOVE` with the `RIGHT` and `LEFT` arguments",
+    "replaced_by": "` + "`" + `LMOVE` + "`" + ` with the ` + "`" + `RIGHT` + "`" + ` and ` + "`" + `LEFT` + "`" + ` arguments",
     "arguments": [
       {
         "name": "source",
@@ -2043,11 +2043,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument",
+    "replaced_by": "` + "`" + `GEOSEARCH` + "`" + ` and ` + "`" + `GEOSEARCHSTORE` + "`" + ` with the ` + "`" + `BYRADIUS` + "`" + ` argument",
     "history": [
       [
         "6.2.0",
-        "Added the `ANY` option for `COUNT`."
+        "Added the ` + "`" + `ANY` + "`" + ` option for ` + "`" + `COUNT` + "`" + `."
       ],
       [
         "7.0.0",
@@ -2212,7 +2212,7 @@ const commandDocJson = `
     "history": [
       [
         "2.4.0",
-        "Accepts multiple `element` arguments."
+        "Accepts multiple ` + "`" + `element` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -2494,11 +2494,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`BLMOVE` with the `RIGHT` and `LEFT` arguments",
+    "replaced_by": "` + "`" + `BLMOVE` + "`" + ` with the ` + "`" + `RIGHT` + "`" + ` and ` + "`" + `LEFT` + "`" + ` arguments",
     "history": [
       [
         "6.0.0",
-        "`timeout` is interpreted as a double instead of an integer."
+        "` + "`" + `timeout` + "`" + ` is interpreted as a double instead of an integer."
       ]
     ],
     "arguments": [
@@ -2529,11 +2529,11 @@ const commandDocJson = `
     "history": [
       [
         "4.0.0",
-        "Added the `ASYNC` flushing mode modifier."
+        "Added the ` + "`" + `ASYNC` + "`" + ` flushing mode modifier."
       ],
       [
         "6.2.0",
-        "Added the `SYNC` flushing mode modifier."
+        "Added the ` + "`" + `SYNC` + "`" + ` flushing mode modifier."
       ]
     ],
     "arguments": [
@@ -2609,7 +2609,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` argument",
+    "replaced_by": "` + "`" + `ZRANGE` + "`" + ` with the ` + "`" + `REV` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -2689,7 +2689,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added the `BYTE|BIT` option."
+        "Added the ` + "`" + `BYTE|BIT` + "`" + ` option."
       ]
     ],
     "arguments": [
@@ -2750,7 +2750,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added the `NOW`, `FORCE` and `ABORT` modifiers."
+        "Added the ` + "`" + `NOW` + "`" + `, ` + "`" + `FORCE` + "`" + ` and ` + "`" + `ABORT` + "`" + ` modifiers."
       ]
     ],
     "arguments": [
@@ -2915,11 +2915,11 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `NOMKSTREAM` option, `MINID` trimming strategy and the `LIMIT` option."
+        "Added the ` + "`" + `NOMKSTREAM` + "`" + ` option, ` + "`" + `MINID` + "`" + ` trimming strategy and the ` + "`" + `LIMIT` + "`" + ` option."
       ],
       [
         "7.0.0",
-        "Added support for the `<ms>-*` explicit ID form."
+        "Added support for the ` + "`" + `<ms>-*` + "`" + ` explicit ID form."
       ]
     ],
     "arguments": [
@@ -3049,7 +3049,7 @@ const commandDocJson = `
     "history": [
       [
         "3.2.0",
-        "Added the `count` argument."
+        "Added the ` + "`" + `count` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -3203,7 +3203,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added options: `NX`, `XX`, `GT` and `LT`."
+        "Added options: ` + "`" + `NX` + "`" + `, ` + "`" + `XX` + "`" + `, ` + "`" + `GT` + "`" + ` and ` + "`" + `LT` + "`" + `."
       ]
     ],
     "arguments": [
@@ -3262,7 +3262,7 @@ const commandDocJson = `
     "history": [
       [
         "2.4.0",
-        "Accepts multiple `element` arguments."
+        "Accepts multiple ` + "`" + `element` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -3603,11 +3603,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments",
+    "replaced_by": "` + "`" + `GEOSEARCH` + "`" + ` and ` + "`" + `GEOSEARCHSTORE` + "`" + ` with the ` + "`" + `BYRADIUS` + "`" + ` and ` + "`" + `FROMMEMBER` + "`" + ` arguments",
     "history": [
       [
         "6.2.0",
-        "Added the `ANY` option for `COUNT`."
+        "Added the ` + "`" + `ANY` + "`" + ` option for ` + "`" + `COUNT` + "`" + `."
       ],
       [
         "7.0.0",
@@ -3976,7 +3976,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "2.0.0",
-    "replaced_by": "`GETRANGE`",
+    "replaced_by": "` + "`" + `GETRANGE` + "`" + `",
     "arguments": [
       {
         "name": "key",
@@ -4296,11 +4296,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`GEOSEARCH` with the `BYRADIUS` argument",
+    "replaced_by": "` + "`" + `GEOSEARCH` + "`" + ` with the ` + "`" + `BYRADIUS` + "`" + ` argument",
     "history": [
       [
         "6.2.0",
-        "Added the `ANY` option for `COUNT`."
+        "Added the ` + "`" + `ANY` + "`" + ` option for ` + "`" + `COUNT` + "`" + `."
       ],
       [
         "7.0.0",
@@ -4590,11 +4590,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `BYSCORE` argument",
+    "replaced_by": "` + "`" + `ZRANGE` + "`" + ` with the ` + "`" + `BYSCORE` + "`" + ` argument",
     "history": [
       [
         "2.0.0",
-        "Added the `WITHSCORES` modifier."
+        "Added the ` + "`" + `WITHSCORES` + "`" + ` modifier."
       ]
     ],
     "arguments": [
@@ -4654,7 +4654,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "`protover` made optional; when called without arguments the command reports the current connection's context."
+        "` + "`" + `protover` + "`" + ` made optional; when called without arguments the command reports the current connection's context."
       ]
     ],
     "arguments": [
@@ -4769,7 +4769,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `CH`, `NX` and `XX` options."
+        "Added the ` + "`" + `CH` + "`" + `, ` + "`" + `NX` + "`" + ` and ` + "`" + `XX` + "`" + ` options."
       ]
     ],
     "arguments": [
@@ -4846,7 +4846,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` and `BYLEX` arguments",
+    "replaced_by": "` + "`" + `ZRANGE` + "`" + ` with the ` + "`" + `REV` + "`" + ` and ` + "`" + `BYLEX` + "`" + ` arguments",
     "arguments": [
       {
         "name": "key",
@@ -5066,7 +5066,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `BYLEX` argument",
+    "replaced_by": "` + "`" + `ZRANGE` + "`" + ` with the ` + "`" + `BYLEX` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -5278,7 +5278,7 @@ const commandDocJson = `
         "history": [
           [
             "7.0.0",
-            "Added the `entries_read` named argument."
+            "Added the ` + "`" + `entries_read` + "`" + ` named argument."
           ]
         ],
         "arguments": [
@@ -5338,7 +5338,7 @@ const commandDocJson = `
         "history": [
           [
             "7.0.0",
-            "Added the optional `entries_read` argument."
+            "Added the optional ` + "`" + `entries_read` + "`" + ` argument."
           ]
         ],
         "arguments": [
@@ -5708,7 +5708,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added options: `NX`, `XX`, `GT` and `LT`."
+        "Added options: ` + "`" + `NX` + "`" + `, ` + "`" + `XX` + "`" + `, ` + "`" + `GT` + "`" + ` and ` + "`" + `LT` + "`" + `."
       ]
     ],
     "arguments": [
@@ -6000,7 +6000,7 @@ const commandDocJson = `
     "history": [
       [
         "2.4.0",
-        "Accepts multiple `field` arguments."
+        "Accepts multiple ` + "`" + `field` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -6120,11 +6120,11 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "6.2.0",
-    "replaced_by": "`ZRANGE` with the `REV` and `BYSCORE` arguments",
+    "replaced_by": "` + "`" + `ZRANGE` + "`" + ` with the ` + "`" + `REV` + "`" + ` and ` + "`" + `BYSCORE` + "`" + ` arguments",
     "history": [
       [
         "2.1.6",
-        "`min` and `max` can be exclusive."
+        "` + "`" + `min` + "`" + ` and ` + "`" + `max` + "`" + ` can be exclusive."
       ]
     ],
     "arguments": [
@@ -6234,7 +6234,7 @@ const commandDocJson = `
           "deprecated"
         ],
         "deprecated_since": "7.0.0",
-        "replaced_by": "`CLUSTER SHARDS`",
+        "replaced_by": "` + "`" + `CLUSTER SHARDS` + "`" + `",
         "history": [
           [
             "4.0.0",
@@ -6542,7 +6542,7 @@ const commandDocJson = `
           "deprecated"
         ],
         "deprecated_since": "5.0.0",
-        "replaced_by": "`CLUSTER REPLICAS`",
+        "replaced_by": "` + "`" + `CLUSTER REPLICAS` + "`" + `",
         "arguments": [
           {
             "name": "node-id",
@@ -6559,7 +6559,7 @@ const commandDocJson = `
         "history": [
           [
             "4.0.0",
-            "Added the optional `cluster_bus_port` argument."
+            "Added the optional ` + "`" + `cluster_bus_port` + "`" + ` argument."
           ]
         ],
         "arguments": [
@@ -6665,15 +6665,15 @@ const commandDocJson = `
     "history": [
       [
         "3.0.0",
-        "Added the `REPLACE` modifier."
+        "Added the ` + "`" + `REPLACE` + "`" + ` modifier."
       ],
       [
         "5.0.0",
-        "Added the `ABSTTL` modifier."
+        "Added the ` + "`" + `ABSTTL` + "`" + ` modifier."
       ],
       [
         "5.0.0",
-        "Added the `IDLETIME` and `FREQ` options."
+        "Added the ` + "`" + `IDLETIME` + "`" + ` and ` + "`" + `FREQ` + "`" + ` options."
       ]
     ],
     "arguments": [
@@ -7012,7 +7012,7 @@ const commandDocJson = `
     "history": [
       [
         "6.0.0",
-        "`timeout` is interpreted as a double instead of an integer."
+        "` + "`" + `timeout` + "`" + ` is interpreted as a double instead of an integer."
       ]
     ],
     "arguments": [
@@ -7068,11 +7068,11 @@ const commandDocJson = `
       ],
       [
         "3.0.2",
-        "Added the `XX`, `NX`, `CH` and `INCR` options."
+        "Added the ` + "`" + `XX` + "`" + `, ` + "`" + `NX` + "`" + `, ` + "`" + `CH` + "`" + ` and ` + "`" + `INCR` + "`" + ` options."
       ],
       [
         "6.2.0",
-        "Added the `GT` and `LT` options."
+        "Added the ` + "`" + `GT` + "`" + ` and ` + "`" + `LT` + "`" + ` options."
       ]
     ],
     "arguments": [
@@ -7305,15 +7305,15 @@ const commandDocJson = `
         "history": [
           [
             "6.0.0",
-            "Added the `FULL` modifier."
+            "Added the ` + "`" + `FULL` + "`" + ` modifier."
           ],
           [
             "7.0.0",
-            "Added the `max-deleted-entry-id`, `entries-added`, `recorded-first-entry-id`, `entries-read` and `lag` fields"
+            "Added the ` + "`" + `max-deleted-entry-id` + "`" + `, ` + "`" + `entries-added` + "`" + `, ` + "`" + `recorded-first-entry-id` + "`" + `, ` + "`" + `entries-read` + "`" + ` and ` + "`" + `lag` + "`" + ` fields"
           ],
           [
             "7.2.0",
-            "Added the `active-time` field, and changed the meaning of `seen-time`."
+            "Added the ` + "`" + `active-time` + "`" + ` field, and changed the meaning of ` + "`" + `seen-time` + "`" + `."
           ]
         ],
         "arguments": [
@@ -7357,7 +7357,7 @@ const commandDocJson = `
         "history": [
           [
             "7.2.0",
-            "Added the `inactive` field, and changed the meaning of `idle`."
+            "Added the ` + "`" + `inactive` + "`" + ` field, and changed the meaning of ` + "`" + `idle` + "`" + `."
           ]
         ],
         "arguments": [
@@ -7388,7 +7388,7 @@ const commandDocJson = `
         "history": [
           [
             "7.0.0",
-            "Added the `entries-read` and `lag` fields"
+            "Added the ` + "`" + `entries-read` + "`" + ` and ` + "`" + `lag` + "`" + ` fields"
           ]
         ],
         "arguments": [
@@ -7652,7 +7652,7 @@ const commandDocJson = `
     "history": [
       [
         "6.2.0",
-        "Added the `count` argument."
+        "Added the ` + "`" + `count` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -7681,7 +7681,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added options: `NX`, `XX`, `GT` and `LT`."
+        "Added options: ` + "`" + `NX` + "`" + `, ` + "`" + `XX` + "`" + `, ` + "`" + `GT` + "`" + ` and ` + "`" + `LT` + "`" + `."
       ]
     ],
     "arguments": [
@@ -8002,7 +8002,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "5.0.0",
-    "replaced_by": "`REPLICAOF`",
+    "replaced_by": "` + "`" + `REPLICAOF` + "`" + `",
     "arguments": [
       {
         "name": "args",
@@ -8139,7 +8139,7 @@ const commandDocJson = `
     "history": [
       [
         "6.0.0",
-        "`timeout` is interpreted as a double instead of an integer."
+        "` + "`" + `timeout` + "`" + ` is interpreted as a double instead of an integer."
       ]
     ],
     "arguments": [
@@ -8261,7 +8261,7 @@ const commandDocJson = `
     "history": [
       [
         "7.2.0",
-        "Added the optional `WITHSCORE` argument."
+        "Added the optional ` + "`" + `WITHSCORE` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -8608,27 +8608,27 @@ const commandDocJson = `
         "history": [
           [
             "2.8.12",
-            "Added unique client `id` field."
+            "Added unique client ` + "`" + `id` + "`" + ` field."
           ],
           [
             "5.0.0",
-            "Added optional `TYPE` filter."
+            "Added optional ` + "`" + `TYPE` + "`" + ` filter."
           ],
           [
             "6.0.0",
-            "Added `user` field."
+            "Added ` + "`" + `user` + "`" + ` field."
           ],
           [
             "6.2.0",
-            "Added `argv-mem`, `tot-mem`, `laddr` and `redir` fields and the optional `ID` filter."
+            "Added ` + "`" + `argv-mem` + "`" + `, ` + "`" + `tot-mem` + "`" + `, ` + "`" + `laddr` + "`" + ` and ` + "`" + `redir` + "`" + ` fields and the optional ` + "`" + `ID` + "`" + ` filter."
           ],
           [
             "7.0.0",
-            "Added `resp`, `multi-mem`, `rbs` and `rbp` fields."
+            "Added ` + "`" + `resp` + "`" + `, ` + "`" + `multi-mem` + "`" + `, ` + "`" + `rbs` + "`" + ` and ` + "`" + `rbp` + "`" + ` fields."
           ],
           [
             "7.0.3",
-            "Added `ssub` field."
+            "Added ` + "`" + `ssub` + "`" + ` field."
           ]
         ],
         "arguments": [
@@ -8852,23 +8852,23 @@ const commandDocJson = `
           ],
           [
             "2.8.12",
-            "`ID` option."
+            "` + "`" + `ID` + "`" + ` option."
           ],
           [
             "3.2.0",
-            "Added `master` type in for `TYPE` option."
+            "Added ` + "`" + `master` + "`" + ` type in for ` + "`" + `TYPE` + "`" + ` option."
           ],
           [
             "5.0.0",
-            "Replaced `slave` `TYPE` with `replica`. `slave` still supported for backward compatibility."
+            "Replaced ` + "`" + `slave` + "`" + ` ` + "`" + `TYPE` + "`" + ` with ` + "`" + `replica` + "`" + `. ` + "`" + `slave` + "`" + ` still supported for backward compatibility."
           ],
           [
             "6.2.0",
-            "`LADDR` option."
+            "` + "`" + `LADDR` + "`" + ` option."
           ],
           [
             "7.4.0",
-            "`MAXAGE` option."
+            "` + "`" + `MAXAGE` + "`" + ` option."
           ]
         ],
         "arguments": [
@@ -9016,7 +9016,7 @@ const commandDocJson = `
         "history": [
           [
             "6.2.0",
-            "`CLIENT PAUSE WRITE` mode added along with the `mode` option."
+            "` + "`" + `CLIENT PAUSE WRITE` + "`" + ` mode added along with the ` + "`" + `mode` + "`" + ` option."
           ]
         ],
         "arguments": [
@@ -9093,7 +9093,7 @@ const commandDocJson = `
     "history": [
       [
         "3.0.3",
-        "Accepts multiple `key` arguments."
+        "Accepts multiple ` + "`" + `key` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -9437,7 +9437,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `NX` argument",
+    "replaced_by": "` + "`" + `SET` + "`" + ` with the ` + "`" + `NX` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -9503,7 +9503,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "4.0.0",
-    "replaced_by": "`HSET` with multiple field-value pairs",
+    "replaced_by": "` + "`" + `HSET` + "`" + ` with multiple field-value pairs",
     "arguments": [
       {
         "name": "key",
@@ -9623,7 +9623,7 @@ const commandDocJson = `
     "history": [
       [
         "4.0.0",
-        "Accepts multiple `element` arguments."
+        "Accepts multiple ` + "`" + `element` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -9652,7 +9652,7 @@ const commandDocJson = `
       "deprecated"
     ],
     "deprecated_since": "2.6.12",
-    "replaced_by": "`SET` with the `EX` argument",
+    "replaced_by": "` + "`" + `SET` + "`" + ` with the ` + "`" + `EX` + "`" + ` argument",
     "arguments": [
       {
         "name": "key",
@@ -9680,7 +9680,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added options: `NX`, `XX`, `GT` and `LT`."
+        "Added options: ` + "`" + `NX` + "`" + `, ` + "`" + `XX` + "`" + `, ` + "`" + `GT` + "`" + ` and ` + "`" + `LT` + "`" + `."
       ]
     ],
     "arguments": [
@@ -9786,7 +9786,7 @@ const commandDocJson = `
     "history": [
       [
         "2.6.0",
-        "Added the optional `count` argument."
+        "Added the optional ` + "`" + `count` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -9815,7 +9815,7 @@ const commandDocJson = `
     "history": [
       [
         "7.2.0",
-        "Added the optional `WITHSCORE` argument."
+        "Added the optional ` + "`" + `WITHSCORE` + "`" + ` argument."
       ]
     ],
     "arguments": [
@@ -10012,7 +10012,7 @@ const commandDocJson = `
     "history": [
       [
         "6.0.0",
-        "Added the `TYPE` subcommand."
+        "Added the ` + "`" + `TYPE` + "`" + ` subcommand."
       ]
     ],
     "arguments": [
@@ -10128,7 +10128,7 @@ const commandDocJson = `
     "history": [
       [
         "6.0.0",
-        "`timeout` is interpreted as a double instead of an integer."
+        "` + "`" + `timeout` + "`" + ` is interpreted as a double instead of an integer."
       ]
     ],
     "arguments": [
@@ -10209,7 +10209,7 @@ const commandDocJson = `
     "history": [
       [
         "6.0.0",
-        "`timeout` is interpreted as a double instead of an integer."
+        "` + "`" + `timeout` + "`" + ` is interpreted as a double instead of an integer."
       ]
     ],
     "arguments": [
@@ -10251,7 +10251,7 @@ const commandDocJson = `
     "history": [
       [
         "3.2.2",
-        "Added the `SCHEDULE` option."
+        "Added the ` + "`" + `SCHEDULE` + "`" + ` option."
       ]
     ],
     "arguments": [
@@ -10275,7 +10275,7 @@ const commandDocJson = `
     "history": [
       [
         "7.0.0",
-        "Added the `BYTE|BIT` option."
+        "Added the ` + "`" + `BYTE|BIT` + "`" + ` option."
       ]
     ],
     "arguments": [
@@ -10436,19 +10436,19 @@ const commandDocJson = `
     "history": [
       [
         "2.6.12",
-        "Added the `EX`, `PX`, `NX` and `XX` options."
+        "Added the ` + "`" + `EX` + "`" + `, ` + "`" + `PX` + "`" + `, ` + "`" + `NX` + "`" + ` and ` + "`" + `XX` + "`" + ` options."
       ],
       [
         "6.0.0",
-        "Added the `KEEPTTL` option."
+        "Added the ` + "`" + `KEEPTTL` + "`" + ` option."
       ],
       [
         "6.2.0",
-        "Added the `GET`, `EXAT` and `PXAT` option."
+        "Added the ` + "`" + `GET` + "`" + `, ` + "`" + `EXAT` + "`" + ` and ` + "`" + `PXAT` + "`" + ` option."
       ],
       [
         "7.0.0",
-        "Allowed the `NX` and `GET` options to be used together."
+        "Allowed the ` + "`" + `NX` + "`" + ` and ` + "`" + `GET` + "`" + ` options to be used together."
       ]
     ],
     "arguments": [
@@ -10549,7 +10549,7 @@ const commandDocJson = `
     "history": [
       [
         "4.0.0",
-        "Accepts multiple `field` and `value` arguments."
+        "Accepts multiple ` + "`" + `field` + "`" + ` and ` + "`" + `value` + "`" + ` arguments."
       ]
     ],
     "arguments": [
@@ -10778,7 +10778,7 @@ const commandDocJson = `
         "history": [
           [
             "6.2.0",
-            "Added the `ASYNC` and `SYNC` flushing mode modifiers."
+            "Added the ` + "`" + `ASYNC` + "`" + ` and ` + "`" + `SYNC` + "`" + ` flushing mode modifiers."
           ]
         ],
         "arguments": [
@@ -11082,15 +11082,15 @@ const commandDocJson = `
     "history": [
       [
         "3.0.0",
-        "Added the `REPLACE` modifier."
+        "Added the ` + "`" + `REPLACE` + "`" + ` modifier."
       ],
       [
         "5.0.0",
-        "Added the `ABSTTL` modifier."
+        "Added the ` + "`" + `ABSTTL` + "`" + ` modifier."
       ],
       [
         "5.0.0",
-        "Added the `IDLETIME` and `FREQ` options."
+        "Added the ` + "`" + `IDLETIME` + "`" + ` and ` + "`" + `FREQ` + "`" + ` options."
       ]
     ],
     "arguments": [
@@ -11160,4 +11160,3 @@ const commandDocJson = `
   }
 }
 `
-

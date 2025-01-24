@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/go-redis/redis/v8"
 	"slices"
@@ -13,23 +12,29 @@ import (
 // redis-cli --json command docs | jq > commands.json
 
 type CommandDoc struct {
-	Summary    string                `json:"summary"`
-	Since      string                `json:"since"`
-	Group      string                `json:"group"`
-	Complexity string                `json:"complexity"`
-	History    [][]string            `json:"history"`
-	Arguments  []CommandDocArguments `json:"arguments"`
+	Summary         string                `json:"summary"`
+	Since           string                `json:"since"`
+	Group           string                `json:"group"`
+	Complexity      string                `json:"complexity"`
+	History         [][]string            `json:"history"`
+	Arguments       []CommandDocArguments `json:"arguments"`
+	DocFlags        []string              `json:"doc_flags"`
+	DeprecatedSince string                `json:"deprecated_since"`
+	Replacedby      string                `json:"replaced_by"`
 }
 
 type CommandDocArguments struct {
-	Name         string                `json:"name"`
-	Type         string                `json:"type"`
-	DisplayText  string                `json:"display_text"`
-	KeySpecIndex string                `json:"key_spec_index"`
-	Flags        []string              `json:"flags"`
-	Since        string                `json:"since"`
-	Arguments    []CommandDocArguments `json:"arguments"`
-	Token        string                `json:"token"`
+	Name            string                `json:"name"`
+	Type            string                `json:"type"`
+	DisplayText     string                `json:"display_text"`
+	KeySpecIndex    int                   `json:"key_spec_index"`
+	Flags           []string              `json:"flags"`
+	Since           string                `json:"since"`
+	Arguments       []CommandDocArguments `json:"arguments"`
+	Token           string                `json:"token"`
+	Summary         string                `json:"summary"`
+	DeprecatedSince string                `json:"deprecated_since"`
+	Value           string                `json:"value"`
 }
 
 var commandDocMap map[string]CommandDoc
@@ -60,12 +65,11 @@ func loadCompletion() (err error) {
 
 func completer(d prompt.Document) []prompt.Suggest {
 	items := strings.Split(d.Text, " ")
-	var commandName string
-	if len(items) > 0 {
-		commandName = items[0]
-	}
-	isCurrentArgKey, commandExists := commandDocMap[commandName]
-	fmt.Println(isCurrentArgKey, commandExists)
+	//var commandName string
+	//if len(items) > 0 {
+	//	commandName = items[0]
+	//}
+	//isCurrentArgKey, commandExists := commandDocMap[commandName]
 	s := make([]prompt.Suggest, 0)
 	if len(items) > 1 && len(lastResult) > 0 {
 		for _, r := range lastResult {
@@ -74,11 +78,9 @@ func completer(d prompt.Document) []prompt.Suggest {
 			})
 		}
 	} else if len(items) == 1 {
-		for _, command := range commands {
-			info := command.([]interface{})
-			commandName := fmt.Sprintf("%v", info[0])
+		for name, command := range commandDocMap {
 			s = append(s, prompt.Suggest{
-				Text: commandName, Description: fmt.Sprintf("%s command", commandName),
+				Text: name, Description: command.Summary,
 			})
 		}
 	}
