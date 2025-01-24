@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/go-redis/redis/v8"
@@ -9,67 +10,30 @@ import (
 	"strings"
 )
 
-type FindKeySpec struct {
-	LastKey int
-	KeyStep int
-	Limit   int
+// redis-cli --json command docs | jq > commands.json
+
+type CommandDoc struct {
+	Summary    string                `json:"summary"`
+	Since      string                `json:"since"`
+	Group      string                `json:"group"`
+	Complexity string                `json:"complexity"`
+	History    [][]string            `json:"history"`
+	Arguments  []CommandDocArguments `json:"arguments"`
 }
 
-type FindKeySearchType string
-
-const (
-	FindKeySearchTypeRange = "range"
-	FindKeySearchTypeKeynum = "keynum"
-	FindKeySearchTypeUnknown = "unknown"
-)
-
-https://redis.io/docs/latest/develop/reference/key-specs/
-type FindKey struct {
-	Type FindKeySearchType
-	RangeSpec FindKeyRangeSpec
-	KeyNumSpec FindKeyKeyNumSpec
+type CommandDocArguments struct {
+	Name         string                `json:"name"`
+	Type         string                `json:"type"`
+	DisplayText  string                `json:"display_text"`
+	KeySpecIndex string                `json:"key_spec_index"`
+	Flags        []string              `json:"flags"`
+	Since        string                `json:"since"`
+	Arguments    []CommandDocArguments `json:"arguments"`
+	Token        string                `json:"token"`
 }
 
-type BeginSearchIndexSpec struct {
-	Index int
-}
-type BeginSearchKeywordSpec struct {
-	KeyWord string
-	StartFrom int
-}
-
-type BeginSearchType string
-
-const (
-	BeginSearchTypeIndex = "index"
-	BeginSearchTypeKeyword = "keyword"
-	BeginSearchTypeUnknown = "unknown"
-)
-
-type BeginSearchSpec struct {
-	Type      BeginSearchType
-	IndexSpec BeginSearchIndexSpec
-	KeyWordSpec BeginSearchKeywordSpec
-}
-
-type KeySpecification struct {
-	BeginSearch BeginSearchSpec
-	FindKey     FindKey
-	Notes       string
-}
-
-type CommandInfo struct {
-	Name              string
-	FirstKey          int
-	LastKey           int
-	StepKey           int
-	Tips              string
-	KeySpecifications []KeySpecification
-	SubCommands       map[string]CommandInfo
-}
-
+var commandDocMap map[string]CommandDoc
 var commands []interface{}
-var commandMap map[string]CommandInfo
 var lastResult = make([]string, 0)
 
 type ConnectSubCommand struct{}
@@ -80,19 +44,17 @@ func (q ConnectSubCommand) Accept(parameters *Parameters) bool {
 
 func (q ConnectSubCommand) Execute(parameters *Parameters) (err error) {
 	client := connectToRedis(parameters.Connect.Connect)
-	if err = loadCompletion(client); err != nil {
+	if err = loadCompletion(); err != nil {
 		return err
 	}
 	err = showPrompt(client)
 	return err
 }
 
-func loadCompletion(client *redis.Client) (err error) {
-	var result interface{}
-	if result, err = client.Do(context.Background(), "COMMAND").Result(); err != nil {
+func loadCompletion() (err error) {
+	if err = json.Unmarshal([]byte(commandDocJson), &commandDocMap); err != nil {
 		return err
 	}
-	commands = result.([]interface{})
 	return err
 }
 
@@ -102,7 +64,8 @@ func completer(d prompt.Document) []prompt.Suggest {
 	if len(items) > 0 {
 		commandName = items[0]
 	}
-	isCurrentArgKey, commandExists := commandMap[commandName]
+	isCurrentArgKey, commandExists := commandDocMap[commandName]
+	fmt.Println(isCurrentArgKey, commandExists)
 	s := make([]prompt.Suggest, 0)
 	if len(items) > 1 && len(lastResult) > 0 {
 		for _, r := range lastResult {
