@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/go-redis/redis/v8"
+	"os"
+	"os/exec"
 	"slices"
 	"strings"
 )
@@ -38,7 +41,6 @@ type CommandDocArguments struct {
 }
 
 var commandDocMap map[string]CommandDoc
-var commands []interface{}
 var lastResult = make([]string, 0)
 
 type ConnectSubCommand struct{}
@@ -49,27 +51,48 @@ func (q ConnectSubCommand) Accept(parameters *Parameters) bool {
 
 func (q ConnectSubCommand) Execute(parameters *Parameters) (err error) {
 	client := connectToRedis(parameters.Connect.Connect)
-	if err = loadCompletion(); err != nil {
+	if err = loadCompletion(client); err != nil {
 		return err
 	}
 	err = showPrompt(client)
 	return err
 }
 
-func loadCompletion() (err error) {
+func loadCompletion(client *redis.Client) (err error) {
 	if err = json.Unmarshal([]byte(commandDocJson), &commandDocMap); err != nil {
 		return err
 	}
+	err = filterCommandsByVersion(client)
 	return err
+}
+
+func filterCommandsByVersion(client *redis.Client) (err error) {
+	var infos string
+	if infos, err = client.Info(context.Background()).Result(); err != nil {
+		return err
+	}
+	var versionStr string
+	for _, info := range strings.Split(infos, "\r\n") {
+		infoSplit := strings.Split(info, ":")
+		if len(infoSplit) >= 2 && infoSplit[0] == "redis_version" {
+			versionStr = infoSplit[1]
+		}
+	}
+	_ = versionStr
+	return err
+}
+
+func getRedisVersionInt(versionStr string) (version int) {
+	version = 0
+	versionParts := strings.Split(versionStr, ".")
+	for _, part := range versionParts {
+		var
+	}
+	return version
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
 	items := strings.Split(d.Text, " ")
-	//var commandName string
-	//if len(items) > 0 {
-	//	commandName = items[0]
-	//}
-	//isCurrentArgKey, commandExists := commandDocMap[commandName]
 	s := make([]prompt.Suggest, 0)
 	if len(items) > 1 && len(lastResult) > 0 {
 		for _, r := range lastResult {
@@ -80,7 +103,8 @@ func completer(d prompt.Document) []prompt.Suggest {
 	} else if len(items) == 1 {
 		for name, command := range commandDocMap {
 			s = append(s, prompt.Suggest{
-				Text: name, Description: command.Summary,
+				Text:        name,
+				Description: getCommandDescription(command),
 			})
 		}
 	}
@@ -88,6 +112,14 @@ func completer(d prompt.Document) []prompt.Suggest {
 		return strings.Compare(a.Text, b.Text)
 	})
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+}
+
+func getCommandDescription(command CommandDoc) string {
+	return fmt.Sprintf(
+		"%s Complexity : %s",
+		command.Summary,
+		command.Complexity,
+	)
 }
 
 func showPrompt(client *redis.Client) (err error) {
@@ -101,7 +133,13 @@ func showPrompt(client *redis.Client) (err error) {
 		history = append(history, command)
 		var result interface{}
 		if strings.ToLower(command) == "exit" {
-			break
+			rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
+			rawModeOff.Stdin = os.Stdin
+			_ = rawModeOff.Run()
+			if err := rawModeOff.Wait(); err != nil {
+				PrintErrorAndExit(err)
+			}
+			os.Exit(0)
 		}
 		argsStr := strings.Split(command, " ")
 		args := make([]interface{}, len(argsStr))
