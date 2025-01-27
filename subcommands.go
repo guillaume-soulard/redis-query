@@ -16,6 +16,7 @@ var subCommands = []SubCommand{
 	ScanSubCommand{},
 	QuerySubCommand{},
 	ConnectSubCommand{},
+	MigrateSubCommand{},
 	HelpSubcommand{},
 }
 

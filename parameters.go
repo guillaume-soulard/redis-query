@@ -17,6 +17,20 @@ type Parameters struct {
 	Command     CommandCommand
 	Query       QueryCommand
 	Connect     ConnectCommand
+	Migrate     MigrateCommand
+}
+
+type MigrateCommand struct {
+	SourceEnv     *string
+	SourceConnect ConnectParameters
+	TargetEnv     *string
+	TargetConnect ConnectParameters
+	SourcePattern *string
+	Count         *int
+	Ttl           *int
+	Replace       *bool
+	Cmd           *argparse.Command
+	Limit         *int
 }
 
 type EnvCommand struct {
@@ -146,6 +160,16 @@ func parseParameters() Parameters {
 	params.Connect.EnvName = connectCommand.String("e", "env", &argparse.Options{Required: false, Help: "environment name to use"})
 	setConnect(&params.Connect.Connect, connectCommand)
 	params.Connect.Cmd = connectCommand
+
+	migrateCommand := parser.NewCommand("migrate", "migrate keys from one redis to another redis instance")
+	params.Migrate.SourceEnv = migrateCommand.String("s", "source-env", &argparse.Options{Required: true, Help: "source environment name to use"})
+	params.Migrate.TargetEnv = migrateCommand.String("t", "target-env", &argparse.Options{Required: true, Help: "target environment name to use"})
+	params.Migrate.SourcePattern = migrateCommand.String("p", "source-pattern", &argparse.Options{Required: true, Help: "source keys pattern to dump"})
+	params.Migrate.Count = migrateCommand.Int("c", "count", &argparse.Options{Required: false, Help: "source scan command count arg"})
+	params.Migrate.Limit = migrateCommand.Int("l", "limit", &argparse.Options{Required: false, Help: "maximum number of keys to migrate"})
+	params.Migrate.Ttl = migrateCommand.Int("", "ttl", &argparse.Options{Required: false, Help: "the ttl to use for restore (by default use the source ttl)"})
+	params.Migrate.Replace = migrateCommand.Flag("r", "replace", &argparse.Options{Required: false, Help: "replace the key on target if exists on target. If not specify the 'Target key name is busy' error is ignored"})
+	params.Migrate.Cmd = migrateCommand
 
 	if err := parser.Parse(os.Args); err != nil {
 		PrintErrorAndExit(errors.New(parser.Usage(nil)))

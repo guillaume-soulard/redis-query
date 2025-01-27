@@ -35,7 +35,8 @@ func (l LoadEnvSubCommand) Accept(parameters *Parameters) bool {
 	return (parameters.Scan.Cmd.Happened() && *parameters.Scan.EnvName != "") ||
 		(parameters.Command.Cmd.Happened() && *parameters.Command.EnvName != "") ||
 		(parameters.Query.Cmd.Happened() && *parameters.Query.EnvName != "") ||
-		(parameters.Connect.Cmd.Happened() && *parameters.Connect.EnvName != "")
+		(parameters.Connect.Cmd.Happened() && *parameters.Connect.EnvName != "") ||
+		(parameters.Migrate.Cmd.Happened() && *parameters.Migrate.SourceEnv != "" && *parameters.Migrate.TargetEnv != "")
 }
 
 func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
@@ -50,6 +51,12 @@ func (l LoadEnvSubCommand) Execute(parameters *Parameters) (err error) {
 	}
 	if parameters.Connect.Cmd.Happened() && *parameters.Connect.EnvName != "" {
 		err = loadEnv(parameters.Connect.EnvName, &parameters.Connect.Connect)
+	}
+	if parameters.Migrate.Cmd.Happened() && *parameters.Migrate.SourceEnv != "" && *parameters.Migrate.TargetEnv != "" {
+		if err = loadEnv(parameters.Migrate.SourceEnv, &parameters.Migrate.SourceConnect); err != nil {
+			return err
+		}
+		err = loadEnv(parameters.Migrate.TargetEnv, &parameters.Migrate.TargetConnect)
 	}
 	return err
 }
