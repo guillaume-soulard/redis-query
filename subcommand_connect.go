@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -40,8 +41,9 @@ type CommandDocArguments struct {
 	Value           string                `json:"value"`
 }
 
-var commandDocMap map[string]CommandDoc
+var allCommandDocMap map[string]CommandDoc
 var lastResult = make([]string, 0)
+var actualRedisVersion int
 
 type ConnectSubCommand struct{}
 
@@ -59,36 +61,49 @@ func (q ConnectSubCommand) Execute(parameters *Parameters) (err error) {
 }
 
 func loadCompletion(client *redis.Client) (err error) {
-	if err = json.Unmarshal([]byte(commandDocJson), &commandDocMap); err != nil {
+	if err = json.Unmarshal([]byte(commandDocJson), &allCommandDocMap); err != nil {
 		return err
 	}
-	err = filterCommandsByVersion(client)
+	if actualRedisVersion, err = getActualRedisVersion(client); err != nil {
+		return err
+	}
 	return err
 }
 
-func filterCommandsByVersion(client *redis.Client) (err error) {
+func filterCommandsByVersion() (filteredCommands map[string]CommandDoc, err error) {
+	filteredCommands = make(map[string]CommandDoc)
+	var commandSince int
+	for commandName, commandDoc := range allCommandDocMap {
+		if commandSince, err = getRedisVersionInt(commandDoc.Since); err != nil {
+			return filteredCommands, err
+		}
+		if commandSince >= actualRedisVersion {
+			filteredCommands[commandName] = commandDoc
+		}
+	}
+	return filteredCommands, err
+}
+
+func getActualRedisVersion(client *redis.Client) (version int, err error) {
 	var infos string
 	if infos, err = client.Info(context.Background()).Result(); err != nil {
-		return err
+		return version, err
 	}
-	var versionStr string
 	for _, info := range strings.Split(infos, "\r\n") {
 		infoSplit := strings.Split(info, ":")
 		if len(infoSplit) >= 2 && infoSplit[0] == "redis_version" {
-			versionStr = infoSplit[1]
+			if version, err = getRedisVersionInt(infoSplit[1]); err != nil {
+				return version, err
+			}
 		}
 	}
-	_ = versionStr
-	return err
+	return version, err
 }
 
-func getRedisVersionInt(versionStr string) (version int) {
+func getRedisVersionInt(versionStr string) (version int, err error) {
 	version = 0
-	versionParts := strings.Split(versionStr, ".")
-	for _, part := range versionParts {
-		var
-	}
-	return version
+	version, err = strconv.Atoi(strings.ReplaceAll(versionStr, ".", ""))
+	return version, err
 }
 
 func completer(d prompt.Document) []prompt.Suggest {
@@ -101,7 +116,12 @@ func completer(d prompt.Document) []prompt.Suggest {
 			})
 		}
 	} else if len(items) == 1 {
-		for name, command := range commandDocMap {
+		var filteredCommands map[string]CommandDoc
+		var err error
+		if filteredCommands, err = filterCommandsByVersion(); err != nil {
+			PrintErrorAndExit(err)
+		}
+		for name, command := range filteredCommands {
 			s = append(s, prompt.Suggest{
 				Text:        name,
 				Description: getCommandDescription(command),
