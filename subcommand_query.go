@@ -214,7 +214,9 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 		if c.Block.BlockArgs != nil && c.Block.BlockArgs.Args != nil && len(c.Block.BlockArgs.Args) > 0 {
 			blockContext := executableContext.Copy()
 			if array, isArray := cmdResult.([]interface{}); isArray {
-				blockContext.QueryParameters = make(map[string]interface{})
+				if blockContext.QueryParameters == nil {
+					blockContext.QueryParameters = make(map[string]interface{})
+				}
 				paramIndex := 0
 				resultArray := make([]interface{}, 0, len(array)/len(c.Block.BlockArgs.Args))
 				readParams := 0
@@ -233,6 +235,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 							}
 							resultArray = append(resultArray, subResult.Result)
 						}
+						delete(blockContext.QueryParameters, arg)
 					}
 					if readParams >= len(array) {
 						break
@@ -256,6 +259,7 @@ func (c *Command) Execute(executableContext QueryContext) (executableResult Exec
 
 type Variable struct {
 	String   *string `(@String`
+	Literal  *string `| @Ident`
 	Variable *string `| ("#" @Ident))`
 }
 
@@ -269,6 +273,10 @@ func (c *Variable) Execute(queryContext QueryContext) (executableResult Executab
 		}
 		executableResult = ExecutableResult{
 			Result: value,
+		}
+	} else if c.Literal != nil {
+		executableResult = ExecutableResult{
+			Result: *c.Literal,
 		}
 	} else if c.Variable != nil {
 		if value, hasValue := queryContext.QueryParameters[*c.Variable]; hasValue {
