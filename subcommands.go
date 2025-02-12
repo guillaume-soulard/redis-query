@@ -17,6 +17,7 @@ var subCommands = []SubCommand{
 	QuerySubCommand{},
 	ConnectSubCommand{},
 	MigrateSubCommand{},
+	RdbSubCommand{},
 	HelpSubcommand{},
 }
 

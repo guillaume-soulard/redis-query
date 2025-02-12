@@ -18,6 +18,14 @@ type Parameters struct {
 	Query       QueryCommand
 	Connect     ConnectCommand
 	Migrate     MigrateCommand
+	Rdb         RdbCommand
+}
+
+type RdbCommand struct {
+	Cmd        *argparse.Command
+	InputFiles *[]os.File
+	OutputFile *os.File
+	KeyPattern *string
 }
 
 type MigrateCommand struct {
@@ -170,6 +178,13 @@ func parseParameters() Parameters {
 	params.Migrate.Ttl = migrateCommand.Int("", "ttl", &argparse.Options{Required: false, Help: "the ttl to use for restore (by default use the source ttl)"})
 	params.Migrate.Replace = migrateCommand.Flag("r", "replace", &argparse.Options{Required: false, Help: "replace the key on target if exists on target. If not specify the 'Target key name is busy' error is ignored"})
 	params.Migrate.Cmd = migrateCommand
+
+	rdbCommand := parser.NewCommand("rdb", "tool for rdb analyse and manipulations")
+	rdbUpdateCommand := rdbCommand.NewCommand("update", "update rdb data")
+	params.Rdb.InputFiles = rdbUpdateCommand.FileList("i", "input-file", os.O_RDWR, os.ModeExclusive, &argparse.Options{Required: true, Help: "file to use for the rdb tool"})
+	params.Rdb.OutputFile = rdbUpdateCommand.File("o", "output-file", os.O_CREATE|os.O_RDWR, os.ModeExclusive, &argparse.Options{Required: true, Help: "file to write"})
+	params.Rdb.KeyPattern = rdbUpdateCommand.String("k", "key-pattern", &argparse.Options{Required: false, Help: "redis key pattern to process"})
+	params.Rdb.Cmd = rdbCommand
 
 	if err := parser.Parse(os.Args); err != nil {
 		PrintErrorAndExit(errors.New(parser.Usage(nil)))
