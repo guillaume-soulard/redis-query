@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type RdbSubCommand struct{}
@@ -38,28 +39,36 @@ func NewRdbConsumer(file os.File) *RdbConsumer {
 	}
 }
 
-func (q *RdbConsumer) Next() (b byte, eof bool, err error) {
-	if q.bufferIndex >= len(q.buffer) || q.bufferIndex >= q.maxToRead || q.bufferIndex < 0 {
-		if q.maxToRead, err = q.file.Read(q.buffer); err != nil {
-			return b, eof, err
+func (q *RdbConsumer) Next(amount int) (b []byte, eof bool, err error) {
+	b = make([]byte, amount)
+	for i := 0; i < amount; i++ {
+		if q.bufferIndex >= len(q.buffer) || q.bufferIndex >= q.maxToRead || q.bufferIndex < 0 {
+			if q.maxToRead, err = q.file.Read(q.buffer); err != nil {
+				return b, eof, err
+			}
+			if q.maxToRead == 0 {
+				eof = true
+				return b, eof, err
+			}
+			q.bufferIndex = 0
 		}
-		if q.maxToRead == 0 {
-			eof = true
-			return b, eof, err
-		}
-		q.bufferIndex = 0
+		b[i] = q.buffer[q.bufferIndex]
+		q.bufferIndex++
 	}
-	b = q.buffer[q.bufferIndex]
-	q.bufferIndex++
 	return b, eof, err
 }
 
 func parseRdb(file os.File) (err error) {
 	consumer := NewRdbConsumer(file)
 	var eof bool
-	var b byte
-	for b, eof, err = consumer.Next(); err == nil && !eof; b, eof, err = consumer.Next() {
-		fmt.Println(string(b))
+	var b []byte
+	if b, eof, err = consumer.Next(5); err != nil || eof {
+		return err
 	}
+	fmt.Println(string(b))
+	if b, eof, err = consumer.Next(4); err != nil || eof {
+		return err
+	}
+	fmt.Println(strconv.Atoi(string(b)))
 	return err
 }
