@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/akamensky/argparse"
 	"os"
 )
@@ -23,9 +24,15 @@ type Parameters struct {
 
 type RdbCommand struct {
 	Cmd        *argparse.Command
-	InputFiles *[]os.File
-	OutputFile *os.File
+	InputFiles *[]string
+	OutputFile *string
 	KeyPattern *string
+	Update     RdbCommandUpdateTtl
+}
+
+type RdbCommandUpdateTtl struct {
+	Ttl *int
+	Cmd *argparse.Command
 }
 
 type MigrateCommand struct {
@@ -180,14 +187,16 @@ func parseParameters() Parameters {
 	params.Migrate.Cmd = migrateCommand
 
 	rdbCommand := parser.NewCommand("rdb", "tool for rdb analyse and manipulations")
-	rdbUpdateCommand := rdbCommand.NewCommand("update", "update rdb data")
-	params.Rdb.InputFiles = rdbUpdateCommand.FileList("i", "input-file", os.O_RDWR, os.ModeExclusive, &argparse.Options{Required: true, Help: "file to use for the rdb tool"})
-	params.Rdb.OutputFile = rdbUpdateCommand.File("o", "output-file", os.O_CREATE|os.O_RDWR, os.ModeExclusive, &argparse.Options{Required: true, Help: "file to write"})
-	params.Rdb.KeyPattern = rdbUpdateCommand.String("k", "key-pattern", &argparse.Options{Required: false, Help: "redis key pattern to process"})
+	rdbSetTtlCommand := rdbCommand.NewCommand("set-ttl", "Update rdb data")
+	params.Rdb.InputFiles = rdbSetTtlCommand.StringList("i", "input-file", &argparse.Options{Required: true, Help: "file to use for the rdb tool"})
+	params.Rdb.OutputFile = rdbSetTtlCommand.String("o", "output-file", &argparse.Options{Required: true, Help: "file to write"})
+	params.Rdb.KeyPattern = rdbSetTtlCommand.String("k", "key-pattern", &argparse.Options{Required: false, Help: "redis key pattern to process"})
+	params.Rdb.Update.Ttl = rdbSetTtlCommand.Int("t", "ttl", &argparse.Options{Required: true, Help: "the ttl in seconds to set to selected keys (-1 if no expire)"})
+	params.Rdb.Update.Cmd = rdbSetTtlCommand
 	params.Rdb.Cmd = rdbCommand
 
 	if err := parser.Parse(os.Args); err != nil {
-		PrintErrorAndExit(errors.New(parser.Usage(nil)))
+		PrintErrorAndExit(errors.New(fmt.Sprintf("%s \n\n %s", err.Error(), parser.Usage(nil))))
 	}
 	return params
 }
