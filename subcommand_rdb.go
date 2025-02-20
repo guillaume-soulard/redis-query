@@ -14,7 +14,7 @@ type RdbObjectHandler interface {
 }
 
 var objectHandlers = []RdbObjectHandler{
-	RdbSubCommandUpdateTtl{},
+	&RdbSubCommandUpdateTtl{},
 }
 
 type RdbSubCommand struct{}
@@ -59,9 +59,6 @@ func (q RdbSubCommand) Execute(parameters *Parameters) (err error) {
 
 func processRdb(file *os.File, objectHandler RdbObjectHandler, rdbCommand RdbCommand) (err error) {
 	decoder := rdbParser.NewDecoder(file)
-	if err = objectHandler.Begin(rdbCommand); err != nil {
-		return err
-	}
 	if err = decoder.Parse(func(o rdbParser.RedisObject) bool {
 		if err = objectHandler.Execute(o, rdbCommand); err != nil {
 			PrintErrorAndExit(err)
@@ -69,9 +66,6 @@ func processRdb(file *os.File, objectHandler RdbObjectHandler, rdbCommand RdbCom
 		}
 		return true
 	}); err != nil {
-		return err
-	}
-	if err = objectHandler.End(rdbCommand); err != nil {
 		return err
 	}
 	return err
